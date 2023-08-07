@@ -24,3 +24,6 @@ elixir_script-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Temporary output from Elixir language server
+.elixir_ls
