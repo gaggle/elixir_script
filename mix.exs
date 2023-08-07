@@ -6,15 +6,14 @@ defmodule ElixirScript.MixProject do
       app: :elixir_script,
       version: "0.1.0",
       elixir: "~> 1.15",
-      start_permanent: Mix.env() == :prod,
+      escript: escript(),
       deps: deps()
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
-  def application do
+  def escript do
     [
-      extra_applications: [:logger]
+      main_module: ElixirScript.CLI
     ]
   end
 
