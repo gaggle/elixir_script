@@ -19,3 +19,18 @@ jobs:
           output="${{steps.output-set.outputs.result}}"
           [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
           echo "✅ Test passed, outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
+  test_context:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: 'Integration test: context'
+        id: output-set
+        uses: ./
+        with:
+          script: |
+            Map.keys(context)
+      - run: |
+          expected="[__struct__,action,actor,api_url,event_name,graphql_url,job,payload,ref,run_id,run_number,server_url,sha,workflow]"
+          output="${{steps.output-set.outputs.result}}"
+          [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
+          echo "✅ Test passed, outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
