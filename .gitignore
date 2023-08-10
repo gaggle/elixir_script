@@ -27,3 +27,6 @@ elixir_script-*.tar
 
 # Temporary output from Elixir language server
 .elixir_ls
+
+# The compiled artifact
+elixir_script
