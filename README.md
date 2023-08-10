@@ -1,21 +1,24 @@
 # ElixirScript
 
-**TODO: Add description**
+This action makes it easy to quickly write and execute an Elixir script in your workflow.
 
-## Installation
+To use this action, provide an input named `script` that contains the body of an Elixir function call.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `elixir_script` to your list of dependencies in `mix.exs`:
+The following arguments are available in the script's context:
 
-```elixir
-def deps do
-  [
-    {:elixir_script, "~> 0.1.0"}
-  ]
-end
+* `github` A pre-authenticated [tentacat](https://github.com/edgurgel/tentacat) GitHub client
+* `context` A map containing the context of the workflow run
+
+Since the script is just a function body, these values will already be defined, so you don't have to import them.
+
+The return value of the script will be in the step's outputs under the "result" key.
+
+```yaml
+- uses: gaggle/elixir_script@v0
+  id: script
+  with:
+    script: <your_elixir_code_here>
+
+- name: Get result
+  run: echo "${{steps.script.outputs.result}}"
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/elixir_script>.
-
