@@ -4,19 +4,18 @@ on:
   push:
 
 jobs:
-  test:
+  test_return:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Integration test
+      - name: 'Integration test: return'
         id: output-set
         uses: ./
         with:
           script: |
-            IO.puts("hello world")
-            "return value"
-
-      - name: Showing the output
-        run: |
-          echo "outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
+            "return"
+      - run: |
+          expected="return"
+          output="${{steps.output-set.outputs.result}}"
+          [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
+          echo "✅ Test passed, outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
