@@ -8,3 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Integration test
+        id: output-set
+        uses: ./
+        with:
+          script: |
+            IO.puts("hello world")
+            "return value"
+
+      - name: Showing the output
+        run: |
+          echo "outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
