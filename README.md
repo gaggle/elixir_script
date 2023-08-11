@@ -26,7 +26,7 @@ The return value of the script will be in the step's outputs under the "result" 
 
 ### Inspired by GitHub Script
 
-This ElixirScript action is based on the amazing [GitHub Script action][github-script],
+This Elixir Script action is based on the amazing [GitHub Script action][github-script],
 which is primarily built around Javascript.
 Elixir Script adapts its interfaces and functionality to the Elixir environment,
 aiming to provide a seamless experience for Elixir developers.

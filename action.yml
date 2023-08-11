@@ -13,7 +13,7 @@ inputs:
     default: ${{ runner.debug == '1' }}
 outputs:
   result:
-    description: The return value of the script, stringified with `JSON.stringify`
+    description: The stringified return value of the script
 runs:
   using: docker
   image: Dockerfile

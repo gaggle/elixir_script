@@ -4,6 +4,7 @@ on:
   push:
 
 jobs:
+
   test_return:
     runs-on: ubuntu-latest
     steps:
@@ -19,6 +20,7 @@ jobs:
           output="${{steps.output-set.outputs.result}}"
           [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
           echo "✅ Test passed, outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
+
   test_context:
     runs-on: ubuntu-latest
     steps:
