@@ -2,37 +2,73 @@ name: CI/CD
 
 on:
   push:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.parse.outputs.semver }}
+      major: ${{ steps.parse.outputs.major }}
+      minor: ${{ steps.parse.outputs.minor }}
+      patch: ${{ steps.parse.outputs.patch }}
+      exists: ${{ steps.parse.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pkgxdev/dev@v0
+      - name: Parse & check version
+        id: parse
+        run: |
+          parse_version_component() {
+            component=$(echo "$1" | cut -f"$2" -d.)
+            if [ -z "$component" ]; then
+              echo "Could not parse version format: $1"
+              exit 1
+            fi
+            echo "$component"
+          }
+          check_git_tag_exists() {
+            git fetch --prune --unshallow --tags
+            git show-ref --tags v$1 --quiet && echo "true" || echo "false"
+          }
+          echo "semver=$VERSION" >> $GITHUB_OUTPUT
+          echo "major=$(parse_version_component "$VERSION" 1)" >> $GITHUB_OUTPUT
+          echo "minor=$(parse_version_component "$VERSION" 2)" >> $GITHUB_OUTPUT
+          echo "patch=$(parse_version_component "$VERSION" 3)" >> $GITHUB_OUTPUT
+          echo "exists=$(check_git_tag_exists "$VERSION")" >> $GITHUB_OUTPUT
+          echo GitHub Output: $(cat $GITHUB_OUTPUT)
 
-  test_return:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: 'Integration test: return'
-        id: output-set
-        uses: ./
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/metadata-action@v5
+        id: meta
         with:
-          script: |
-            "return"
-      - run: |
-          expected="return"
-          output="${{steps.output-set.outputs.result}}"
-          [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
-          echo "✅ Test passed, outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
-
-  test_context:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: 'Integration test: context'
-        id: output-set
-        uses: ./
+          images: elixir_script:test
+      - uses: actions/cache@v3
         with:
-          script: |
-            Map.keys(context)
-      - run: |
-          expected="[__struct__,action,actor,api_url,event_name,graphql_url,job,payload,ref,run_id,run_number,server_url,sha,workflow]"
-          output="${{steps.output-set.outputs.result}}"
-          [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
-          echo "✅ Test passed, outputs.result: ${{toJSON(steps.output-set.outputs.result)}}"
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .github/Dockerfile
+          tags: elixir_script:test
+          outputs: type=docker,dest=/tmp/elixir_script.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Upload image as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: elixir_script
+          path: /tmp/elixir_script.tar

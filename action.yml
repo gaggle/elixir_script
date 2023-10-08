@@ -16,4 +16,4 @@ outputs:
     description: The stringified return value of the script
 runs:
   using: docker
-  image: Dockerfile
+  image: elixir_script:latest
