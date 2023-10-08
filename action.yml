@@ -16,4 +16,4 @@ outputs:
     description: The stringified return value of the script
 runs:
   using: docker
-  image: elixir_script:latest
+  image: docker://ghcr.io/gaggle/elixir_script:latest
