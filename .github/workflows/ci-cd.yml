@@ -24,6 +24,7 @@ jobs:
       - name: Parse & check version
         id: parse
         run: |
+          set -e  # Exit on error
           parse_version_component() {
             component=$(echo "$1" | cut -f"$2" -d.)
             if [ -z "$component" ]; then
@@ -37,13 +38,12 @@ jobs:
             git show-ref --tags v$1 --quiet && echo "true" || echo "false"
           }
           exists=$(check_git_tag_exists "$VERSION")
-          
           echo "semver=$VERSION" >> $GITHUB_OUTPUT
           echo "major=$(parse_version_component "$VERSION" 1)" >> $GITHUB_OUTPUT
           echo "minor=$(parse_version_component "$VERSION" 2)" >> $GITHUB_OUTPUT
           echo "patch=$(parse_version_component "$VERSION" 3)" >> $GITHUB_OUTPUT
           echo "exists=$exists" >> $GITHUB_OUTPUT
-          echo "pushable=$(( [ "$GITHUB_REF" == "refs/heads/main" ] && [ "$exists" == "false" ] ))" >> $GITHUB_OUTPUT
+          echo "pushable=$( [ "$GITHUB_REF" == "refs/heads/main" ] && [ "$exists" == "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo GitHub Output: $(cat $GITHUB_OUTPUT)
 
   build:
