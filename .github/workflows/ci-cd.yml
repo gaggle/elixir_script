@@ -161,3 +161,18 @@ jobs:
       - name: Push image
         if: needs.version.outputs.pushable == 'true'
         run: docker push --all-tags ghcr.io/gaggle/elixir_script
+
+  release:
+    needs: [ version, push ]
+    if: needs.version.outputs.pushable == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          prerelease: true
+          tag_name: v${{ needs.version.outputs.semver }}
+          token: ${{ secrets.PAT }} # using our own PAT so other workflows run
