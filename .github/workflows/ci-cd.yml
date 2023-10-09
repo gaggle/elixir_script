@@ -176,7 +176,3 @@ jobs:
           prerelease: true
           tag_name: v${{ needs.version.outputs.semver }}
           token: ${{ secrets.PAT }} # using our own PAT so other workflows run
-      - uses: fischerscode/tagger@v0.2
-        with:
-          prefix: v
-          tag: v${{ needs.version.outputs.semver }}

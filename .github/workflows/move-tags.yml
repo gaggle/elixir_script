@@ -1,0 +1,15 @@
+name: Move Tags
+
+on:
+  release:
+    types:
+      - "created"
+
+jobs:
+  tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: fischerscode/tagger@v0.2
+        with:
+          prefix: v
