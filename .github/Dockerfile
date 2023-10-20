@@ -29,9 +29,8 @@ FROM base as release
 COPY --from=build /root/.pkgx /root/.pkgx
 COPY --from=build /action/workspace/.pkgx.yaml /usr/local/bin
 COPY --from=build /action/workspace/elixir_script /usr/local/bin
-RUN echo '#!/bin/sh\n\
+RUN echo -e '#!/bin/sh\n\
 eval "$(pkgx --internal.activate /usr/local/bin)"\n\
 exec /usr/local/bin/elixir_script "$@"' > /usr/local/bin/elixir_script_wrapper && \
 chmod +x /usr/local/bin/elixir_script_wrapper
-
 ENTRYPOINT ["elixir_script_wrapper"]
