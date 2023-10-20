@@ -1,0 +1,41 @@
+name: "Tag and Push Image"
+description: "Log in to Docker registry, generate metadata, re-tag the source image, and push it"
+inputs:
+  source-image:
+    description: "Name of the image to re-tag and push"
+    required: true
+  semver:
+    description: "Semantic version"
+    required: true
+  exists:
+    description: "Does the version tag exist?"
+    required: true
+  push:
+    description: "If false runs a dry-run that doesn't actually push"
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - name: Generate Docker Metadata
+      uses: docker/metadata-action@v5
+      id: meta
+      with:
+        images: ${{ github.repository }}
+        tags: |
+          type=ref,event=branch,prefix=branch-,enable=${{ github.ref != format('refs/heads/{0}', 'main') }}
+          type=semver,pattern=v{{version}},value=${{ inputs.semver }},enable=${{ github.ref == format('refs/heads/{0}', 'main') && fromJSON(inputs.exists) == false }}
+          type=semver,pattern=v{{major}}.{{minor}},value=${{ inputs.semver }},enable=${{ github.ref == format('refs/heads/{0}', 'main') && fromJSON(inputs.exists) == false }}
+          type=semver,pattern=v{{major}},value=${{ inputs.semver }},enable=${{ github.ref == format('refs/heads/{0}', 'main') && fromJSON(inputs.exists) == false && !(startsWith(inputs.semver, '0')) }}
+          type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') && fromJSON(inputs.exists) == false }}
+          type=sha,format=long
+    - name: Tag image
+      run: |
+        echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
+          echo "Processing tag: $tag"
+          docker tag ${{ inputs.source-image }} "$tag"
+        done
+      shell: bash
+    - name: Push image
+      if: inputs.push == 'true'
+      run: docker push --all-tags ghcr.io/${{ inputs.repository }}
+      shell: bash

@@ -1,0 +1,40 @@
+name: "Version Config"
+description: "Parse version and check if the codebase is in a pushable state"
+inputs:
+  semver:
+    description: "The version string to be parsed and checked"
+    required: true
+  default-branch:
+    description: "Name of main branch"
+    default: ${{ github.event.repository.default-branch }}
+  debug:
+    description: Default is to run in debug mode when the GitHub Actions step debug logging is turned on.
+    default: ${{ runner.debug == '1' }}
+outputs:
+  semver:
+    description: "The full semantic version. Same as input.semver"
+    value: ""
+  major:
+    description: "Major version, 1.2.3 -> 1"
+    value: ""
+  minor:
+    description: "Minor version, 1.2.3 -> 2"
+    value: ""
+  patch:
+    description: "Patch version, 1.2.3 -> 3"
+    value: ""
+  tag-exists:
+    description: "Indicates whether a Git tag already exists for the version"
+    value: ""
+  releasable:
+    description: "Determines if the current state of the codebase should released, determined by whether the commit is for the default branch and if the version it's associated with has already been released"
+    value: ""
+runs:
+  using: "composite"
+  steps:
+    - run: ${{ github.action_path }}/entrypoint.sh
+      shell: bash
+      env:
+        INPUT_SEMVER: ${{ inputs.semver }}
+        INPUT_DEFAULT_BRANCH: ${{ inputs.default-branch }}
+        INPUT_DEBUG: ${{ inputs.debug }}

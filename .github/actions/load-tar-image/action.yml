@@ -1,0 +1,55 @@
+name: "Download & Load .tar Image"
+description: "Download image from build-tar-image action and make it available for testing, pushing, etc."
+inputs:
+  download-name:
+    default: ${{ github.event.repository.name }}
+  download-tag:
+    default: ${{ github.run_id }}
+outputs:
+  image-name:
+    description: "The container image that got downloaded and made available. Effectively <download-name>:<download-tag>. Also available via `env.IMAGE_NAME`"
+    value: ""
+runs:
+  using: "composite"
+  steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.download-name }}
+        path: /tmp
+    - name: Load image
+      run: docker load --input /tmp/${{ inputs.download-name }}.tar
+      shell: bash
+    - name: Set outputs
+      run: |
+        set -euo pipefail
+        
+        debug_log() {
+          if [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+            echo "##[debug]$1"
+          fi
+        }
+
+        set_output() {
+          local value="$1"
+          local output_key="$2"
+          local env_key="${3:-}"
+        
+          if [ -z "$value" ] || [ -z "$output_key" ]; then
+            echo "Missing essential arguments to set_output_and_env"
+            return 1
+          fi
+        
+          # If env_key is empty, convert output_key to upper snake case
+          if [ -z "$env_key" ]; then
+            env_key=$(echo "$output_key" | awk '{print toupper($0)}' | sed 's/-/_/g')
+          fi
+        
+          echo "$output_key=$value" >> "$GITHUB_OUTPUT"
+          echo "$env_key=$value" >> "$GITHUB_ENV"
+        }
+        
+        image_value="${{ inputs.download-name }}:${{ inputs.download-tag }}"
+        set_output "$image_value" "image-name"
+        debug_log "GitHub Output: $(cat "$GITHUB_OUTPUT")\nGitHub Env: $(cat "$GITHUB_ENV")"
+      shell: bash

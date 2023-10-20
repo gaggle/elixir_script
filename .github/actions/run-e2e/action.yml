@@ -1,0 +1,32 @@
+name: "Run Script & Assert Output"
+description: "Run a script via the Elixir Script Action, and verify its output matches the expected result"
+inputs:
+  image-name:
+    description: "The container image the Elixir Script Action uses to run the script"
+    required: true
+  script:
+    description: "The script to run"
+    required: true
+  expected:
+    description: "The expected output"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Update action.yml to point to ${{ inputs.image-name }}
+      run: |
+        sed -i 's/\(  image: \).*/\1${{ inputs.image-name }}/' action.yml
+      shell: bash
+    - name: Run gaggle/elixir_script
+      id: run
+      uses: ./
+      with:
+        script: |
+          ${{ matrix.data.script }}
+    - name: Assert output
+      run: |
+        expected="${{ matrix.data.expected }}"
+        output="${{steps.run.outputs.result}}"
+        [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
+        echo "✅ Test passed, outputs.result: ${{toJSON(steps.run.outputs.result)}}"
+      shell: bash
