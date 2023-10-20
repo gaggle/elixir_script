@@ -13,7 +13,7 @@ defmodule ElixirScript.MixProject do
 
   def escript do
     [
-      main_module: ElixirScript.CLI
+      main_module: ElixirScript.CommandLine
     ]
   end
 

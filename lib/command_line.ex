@@ -1,10 +1,20 @@
-defmodule ElixirScript.CLI do
+defmodule ElixirScript.CommandLine do
   alias ElixirScript.Context
   alias ElixirScript.Core
   alias ElixirScript.CustomLogger, as: Logger
 
-  def main(_args \\ []) do
+  def main(args \\ []) do
     Logger.debug("Running in debug mode")
+    {opts, _, _} = OptionParser.parse(args, strict: [help: :boolean])
+
+    if opts[:help] do
+      print_help()
+    else
+      run_script()
+    end
+  end
+
+  defp run_script do
     Logger.debug("All Environment Variables: #{inspect(System.get_env(), limit: :infinity, printable_limit: :infinity)}")
 
     script = Core.get_env_input("script", required: true)
@@ -15,7 +25,16 @@ defmodule ElixirScript.CLI do
     Logger.debug("Result output: #{inspect(value, limit: :infinity, printable_limit: :infinity)}")
   end
 
-  defp log_debug(message) do
-    if @debug_mode, do: Logger.debug(message)
+  defp print_help do
+    IO.puts("""
+    Usage:
+      script [OPTIONS]
+
+    Options:
+      --help          Show this help message and exit.
+
+    Example:
+      INPUT_SCRIPT="IO.puts('Hello, world!')" script
+    """)
   end
 end

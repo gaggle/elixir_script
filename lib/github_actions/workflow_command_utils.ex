@@ -1,4 +1,4 @@
-defmodule ElixirScript.CommandUtils do
+defmodule ElixirScript.GitHubActions.CommandUtils do
 
   def to_command_value(nil), do: ""
 

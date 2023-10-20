@@ -1,7 +1,7 @@
 defmodule ElixirScript.Core do
-  alias ElixirScript.Command
-  alias ElixirScript.CommandUtils
-  alias ElixirScript.FileCommand
+  alias ElixirScript.GitHubActions.Command
+  alias ElixirScript.GitHubActions.CommandUtils
+  alias ElixirScript.GitHubActions.EnvironmentFileCommand
 
   def parse_args(args) do
     aliases = [script: :s, debug: :d]
@@ -34,9 +34,9 @@ defmodule ElixirScript.Core do
 
   def set_output(name, value) do
     if System.get_env("GITHUB_OUTPUT") do
-      FileCommand.issue_file_command(
+      EnvironmentFileCommand.issue_file_command(
         "OUTPUT",
-        FileCommand.prepare_key_value_message(name, CommandUtils.to_command_value(value))
+        EnvironmentFileCommand.prepare_key_value_message(name, CommandUtils.to_command_value(value))
       )
     else
       Command.issue_command('set-output', name, CommandUtils.to_command_value(value))
