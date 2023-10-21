@@ -1,9 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-semver="$INPUT_SEMVER"
-default_branch="$INPUT_DEFAULT_BRANCH"
-
 debug_log() {
   if [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     echo "$1" | while IFS= read -r line; do
@@ -68,15 +65,17 @@ check_git_tag_exists() {
   git show-ref --tags "v$1" --quiet && echo "true" || echo "false"
 }
 
-debug_log "semver=$semver"
-debug_log "default_branch=$default_branch"
-
-exists=$(check_git_tag_exists "$semver")
+default_branch="$INPUT_DEFAULT_BRANCH"; debug_log "default_branch=$default_branch"
+ref=$GITHUB_REF; debug_log "ref=$ref"
+semver="$INPUT_SEMVER"; debug_log "semver=$semver"
+exists=$(check_git_tag_exists "$semver"); debug_log "exists=$exists"
+releasable="$( [ "$ref" == "refs/heads/${default_branch}" ] && [ "$exists" == "false" ] && echo "true" || echo "false" )"
+debug_log "releasable=$releasable"
 
 set_output "$semver" "semver"
 set_output "$(parse_semver_component "$semver" 1)" "major"
 set_output "$(parse_semver_component "$semver" 2)" "minor"
 set_output "$(parse_semver_component "$semver" 3)" "patch"
 set_output "$exists" "tag"
-set_output "$( [ "$GITHUB_REF" == "refs/heads/${default_branch}" ] && [ "$exists" == "false" ] && echo "true" || echo "false" )" "releasable"
+set_output "$releasable" "releasable"
 log_output
