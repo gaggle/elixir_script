@@ -31,7 +31,27 @@ runs:
             done
           fi
         }
-
+        
+        log_content() {
+          local content="$1"
+          local label="${2:-}"
+        
+          if [[ -n "$label" ]]; then
+            # Replace the beginning of each line with two spaces
+            local indented_content="${content//$'\n'/$'\n'  }"
+            printf "%s:\n  %s\n" "$label" "$indented_content"
+          else
+            echo "$content"
+          fi
+        }
+        
+        log_output() {
+          echo ::group::Set outputs
+          log_content "$(cat "$GITHUB_OUTPUT")" "GITHUB_OUTPUT"
+          log_content "$(cat "$GITHUB_ENV")" "GITHUB_ENV"
+          echo ::endgroup::
+        }
+        
         set_output() {
           local value="$1"
           local output_key="$2"
@@ -53,5 +73,5 @@ runs:
         
         image_value="${{ inputs.download-name }}:${{ inputs.download-tag }}"
         set_output "$image_value" "image-name"
-        debug_log "GitHub Output: $(cat "$GITHUB_OUTPUT")\nGitHub Env: $(cat "$GITHUB_ENV")"
+        log_output
       shell: bash
