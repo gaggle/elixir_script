@@ -68,14 +68,14 @@ check_git_tag_exists() {
 default_branch="$INPUT_DEFAULT_BRANCH"; debug_log "default_branch=$default_branch"
 ref=$GITHUB_REF; debug_log "ref=$ref"
 semver="$INPUT_SEMVER"; debug_log "semver=$semver"
-exists=$(check_git_tag_exists "$semver"); debug_log "exists=$exists"
-releasable="$( [ "$ref" == "refs/heads/${default_branch}" ] && [ "$exists" == "false" ] && echo "true" || echo "false" )"
+tag_exists=$(check_git_tag_exists "$semver"); debug_log "tag_exists=$tag_exists"
+releasable="$( [ "$ref" == "refs/heads/${default_branch}" ] && [ "$tag_exists" == "false" ] && echo "true" || echo "false" )"
 debug_log "releasable=$releasable"
 
 set_output "$semver" "semver"
 set_output "$(parse_semver_component "$semver" 1)" "major"
 set_output "$(parse_semver_component "$semver" 2)" "minor"
 set_output "$(parse_semver_component "$semver" 3)" "patch"
-set_output "$exists" "tag"
+set_output "$tag_exists" "tag-exists"
 set_output "$releasable" "releasable"
 log_output
