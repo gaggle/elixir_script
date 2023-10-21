@@ -32,6 +32,12 @@ Elixir Script adapts its interfaces and functionality to the Elixir environment,
 aiming to provide a seamless experience for Elixir developers.
 Many thanks to the creators and contributors of GitHub Script.
 
+## Releasing
+
+New release are automatically created when `.pkgx.yaml`'s `VERSION` key is incremented. The release must then be edited,
+ensuring the Marketplace update is enabled, and then re-save. This is a built-in limitation of GitHub releases that
+prevents Marketplace releases from being automated.
+
 [github-script]: https://github.com/marketplace/actions/github-script
 
 [tentacat]: https://github.com/edgurgel/tentacat
