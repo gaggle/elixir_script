@@ -115,6 +115,5 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           generate_release_notes: true
-          prerelease: true
           tag_name: v${{ needs.version.outputs.semver }}
           token: ${{ secrets.PAT }} # using our own PAT so other workflows run
