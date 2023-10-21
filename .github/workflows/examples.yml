@@ -1,6 +1,9 @@
 name: Examples
 
 on:
+  push:
+    paths:
+      - .github/workflows/examples.yml
   release:
     types:
       - "created"
