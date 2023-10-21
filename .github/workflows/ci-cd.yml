@@ -79,7 +79,7 @@ jobs:
         with:
           source-image: ${{ env.IMAGE_NAME }}
           semver: v${{ needs.version.outputs.semver }}
-          exists: v${{ needs.version.outputs.tag-exists }}
+          exists: ${{ needs.version.outputs.tag-exists }}
           push: ${{ needs.version.outputs.releasable }}
 
   release:
