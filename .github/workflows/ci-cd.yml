@@ -3,6 +3,9 @@ name: CI/CD
 on:
   push:
     branches: [ '**' ] # this triggers only on branch commits, which prevents triggering off of tag-only commits
+    paths-ignore:
+      - .github/workflows/examples.yml
+      - .github/workflows/move-tags.yml
   workflow_dispatch:
 
 concurrency:
