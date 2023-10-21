@@ -22,6 +22,8 @@ The return value of the script will be in the step's `outputs.result`:
   run: echo "${{steps.script.outputs.result}}"
 ```
 
+See [.github/workflows/examples.yml](.github/workflows/examples.yml) for more detailed examples of how this can be used.
+
 ## Acknowledgements
 
 ### Inspired by GitHub Script

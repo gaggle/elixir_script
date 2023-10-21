@@ -1,4 +1,4 @@
-name: Smoke Test
+name: Examples
 
 on:
   release:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  smoke-test:
+  io-visible-in-logs-and-return-value-available-via-outputs:
     runs-on: ubuntu-latest
     steps:
       - uses: gaggle/elixir_script@v0
