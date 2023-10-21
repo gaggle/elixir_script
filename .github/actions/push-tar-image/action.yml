@@ -20,7 +20,7 @@ runs:
       uses: docker/metadata-action@v5
       id: meta
       with:
-        images: ${{ github.repository }}
+        images: ghcr.io/${{ github.repository }}
         tags: |
           type=ref,event=branch,prefix=branch-,enable=${{ github.ref != format('refs/heads/{0}', 'main') }}
           type=semver,pattern=v{{version}},         value=${{ inputs.semver }}, enable=${{ github.ref == format('refs/heads/{0}', 'main') && fromJSON(inputs.exists) == false }}
