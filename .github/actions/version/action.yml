@@ -10,26 +10,31 @@ inputs:
 outputs:
   semver:
     description: "The full semantic version. Same as input.semver"
-    value: ""
+    value: ${{ steps.entrypoint.outputs.semver }}
   major:
     description: "Major version, 1.2.3 -> 1"
-    value: ""
+    value: ${{ steps.entrypoint.outputs.major }}
   minor:
     description: "Minor version, 1.2.3 -> 2"
-    value: ""
+    value: ${{ steps.entrypoint.outputs.minor }}
+
   patch:
     description: "Patch version, 1.2.3 -> 3"
-    value: ""
+    value: ${{ steps.entrypoint.outputs.patch }}
+
   tag-exists:
     description: "Indicates whether a Git tag already exists for the version"
-    value: ""
+    value: ${{ steps.entrypoint.outputs.tag-exists }}
+
   releasable:
     description: "Determines if the current state of the codebase should released, determined by whether the commit is for the default branch and if the version it's associated with has already been released"
-    value: ""
+    value: ${{ steps.entrypoint.outputs.releasable }}
+
 runs:
   using: "composite"
   steps:
     - run: ${{ github.action_path }}/entrypoint.sh
+      id: entrypoint
       shell: bash
       env:
         INPUT_SEMVER: ${{ inputs.semver }}
