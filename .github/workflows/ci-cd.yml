@@ -24,7 +24,6 @@ jobs:
         uses: ./.github/actions/version
         with:
           semver: ${{ env.VERSION }}
-      - run: echo "${{ toJSON(steps) }}"
 
   build:
     runs-on: ubuntu-latest
