@@ -6,7 +6,7 @@ inputs:
     required: true
   default-branch:
     description: "Name of main branch"
-    default: ${{ github.event.repository.default-branch }}
+    default: ${{ github.event.repository.default_branch }}
 outputs:
   semver:
     description: "The full semantic version. Same as input.semver"
