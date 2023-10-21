@@ -78,7 +78,7 @@ jobs:
       - uses: ./.github/actions/push-tar-image
         with:
           source-image: ${{ env.IMAGE_NAME }}
-          semver: v${{ needs.version.outputs.semver }}
+          semver: ${{ needs.version.outputs.semver }}
           exists: ${{ needs.version.outputs.tag-exists }}
           push: ${{ needs.version.outputs.releasable }}
 
