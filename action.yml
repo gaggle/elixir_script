@@ -1,6 +1,7 @@
+# https://help.github.com/en/articles/metadata-syntax-for-github-actions
 name: Elixir Script
 author: Jon Lauridsen
-description: Run simple Elixir scripts
+description: Run simple Elixir scripts, easily
 branding:
   color: orange
   icon: code
