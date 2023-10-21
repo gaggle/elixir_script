@@ -1,3 +1,6 @@
+# Output from this workflow available here:
+# https://github.com/gaggle/elixir_script/actions/workflows/examples.yml?query=branch%3Amain
+
 name: Examples
 
 on:
