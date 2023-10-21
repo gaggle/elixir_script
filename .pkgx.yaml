@@ -2,4 +2,4 @@ dependencies:
   elixir-lang.org: =1.15.6
   erlang.org: =26.1.1
 env:
-  VERSION: 0.1.0
+  VERSION: 0.1.1
