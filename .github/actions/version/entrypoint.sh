@@ -3,12 +3,52 @@ set -euo pipefail
 
 semver="$INPUT_SEMVER"
 default_branch="$INPUT_DEFAULT_BRANCH"
-debug="${INPUT_DEBUG:-false}"
 
 debug_log() {
-  if [ "$debug" = "true" ]; then
-    echo "##[debug]$1"
+  if [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    echo "$1" | while IFS= read -r line; do
+      echo "##[debug]$line"
+    done
   fi
+}
+
+log_content() {
+  local content="$1"
+  local label="${2:-}"
+
+  if [[ -n "$label" ]]; then
+    # Replace the beginning of each line with two spaces
+    local indented_content="${content//$'\n'/$'\n'  }"
+    printf "%s:\n  %s\n" "$label" "$indented_content"
+  else
+    echo "$content"
+  fi
+}
+
+log_output() {
+  echo ::group::Set outputs
+  log_content "$(cat "$GITHUB_OUTPUT")" "GITHUB_OUTPUT"
+  log_content "$(cat "$GITHUB_ENV")" "GITHUB_ENV"
+  echo ::endgroup::
+}
+
+set_output() {
+  local value="$1"
+  local output_key="$2"
+  local env_key="${3:-}"
+
+  if [ -z "$value" ] || [ -z "$output_key" ]; then
+    echo "Missing essential arguments to set_output_and_env"
+    return 1
+  fi
+
+  # If env_key is empty, convert output_key to upper snake case
+  if [ -z "$env_key" ]; then
+    env_key=$(echo "$output_key" | awk '{print toupper($0)}' | sed 's/-/_/g')
+  fi
+
+  echo "$output_key=$value" >> "$GITHUB_OUTPUT"
+  echo "$env_key=$value" >> "$GITHUB_ENV"
 }
 
 parse_semver_component() {
@@ -33,13 +73,10 @@ debug_log "default_branch=$default_branch"
 
 exists=$(check_git_tag_exists "$semver")
 
-{
-  echo "semver=$semver"
-  echo "major=$(parse_semver_component "$semver" 1)"
-  echo "minor=$(parse_semver_component "$semver" 2)"
-  echo "patch=$(parse_semver_component "$semver" 3)"
-  echo "tag-exists=$exists"
-  echo "releasable=$( [ "$GITHUB_REF" == "refs/heads/${default_branch}" ] && [ "$exists" == "false" ] && echo "true" || echo "false" )"
-} >> "$GITHUB_OUTPUT"
-
-debug_log "GitHub Output: $(cat "$GITHUB_OUTPUT")"
+set_output "$semver" "semver"
+set_output "$(parse_semver_component "$semver" 1)" "major"
+set_output "$(parse_semver_component "$semver" 2)" "minor"
+set_output "$(parse_semver_component "$semver" 3)" "patch"
+set_output "$exists" "tag"
+set_output "$( [ "$GITHUB_REF" == "refs/heads/${default_branch}" ] && [ "$exists" == "false" ] && echo "true" || echo "false" )" "releasable"
+log_output

@@ -7,9 +7,6 @@ inputs:
   default-branch:
     description: "Name of main branch"
     default: ${{ github.event.repository.default-branch }}
-  debug:
-    description: Default is to run in debug mode when the GitHub Actions step debug logging is turned on.
-    default: ${{ runner.debug == '1' }}
 outputs:
   semver:
     description: "The full semantic version. Same as input.semver"
@@ -37,4 +34,3 @@ runs:
       env:
         INPUT_SEMVER: ${{ inputs.semver }}
         INPUT_DEFAULT_BRANCH: ${{ inputs.default-branch }}
-        INPUT_DEBUG: ${{ inputs.debug }}
