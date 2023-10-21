@@ -23,10 +23,12 @@ runs:
     - name: Set outputs
       run: |
         set -euo pipefail
-        
+
         debug_log() {
           if [ "${RUNNER_DEBUG:-0}" = "1" ]; then
-            echo "##[debug]$1"
+            echo "$1" | while IFS= read -r line; do
+              echo "##[debug]$line"
+            done
           fi
         }
 
