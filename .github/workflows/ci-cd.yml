@@ -59,31 +59,72 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
+  e2e-tests-discovery:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - id: set-matrix
+        name: Discover E2E tests
+        run: |
+          log_content() {
+            local content="$1"
+            local label="${2:-}"
+
+            if [[ -n "$label" ]]; then
+            # Replace the beginning of each line with two spaces
+            local indented_content="${content//$'\n'/$'\n'  }"
+            printf "%s:\n  %s\n" "$label" "$indented_content"
+            else
+            echo "$content"
+            fi
+          }
+
+          log_output() {
+            echo ::group::Set outputs
+            log_content "$(cat "$GITHUB_OUTPUT")" "GITHUB_OUTPUT"
+            log_content "$(cat "$GITHUB_ENV")" "GITHUB_ENV"
+            echo ::endgroup::
+          }
+
+          set_output() {
+            local value="$1"
+            local output_key="$2"
+            local env_key="${3:-}"
+
+            if [ -z "$value" ] || [ -z "$output_key" ]; then
+              echo "Missing essential arguments to set_output_and_env"
+              return 1
+            fi
+
+            # If env_key is empty, convert output_key to upper snake case
+            if [ -z "$env_key" ]; then
+              env_key=$(echo "$output_key" | awk '{print toupper($0)}' | sed 's/-/_/g')
+            fi
+
+            echo "$output_key=$value" >> "$GITHUB_OUTPUT"
+            echo "$env_key=$value" >> "$GITHUB_ENV"
+          }
+          set_output "{\"include\":$(jq -c '[.[]]' test/e2e_tests.json)}" "matrix"
+          log_output
+
   e2e-tests:
-    needs: [ build ]
+    needs: [ build, e2e-tests-discovery ]
     strategy:
       fail-fast: false
-      matrix:
-        data:
-          - name: "return"
-            script: |
-              "return"
-            expected: "return"
-
-          - name: "context"
-            script: |
-              Map.keys(context)
-            expected: "[__struct__,action,actor,api_url,event_name,graphql_url,job,payload,ref,run_id,run_number,server_url,sha,workflow]"
+      matrix: ${{fromJson(needs.e2e-tests-discovery.outputs.matrix)}}
     runs-on: ubuntu-latest
-    name: "e2e tests (${{ matrix.data.name }})"
+    name: "e2e tests (${{ matrix.name }})"
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/load-tar-image
       - uses: ./.github/actions/run-e2e
         with:
           image-name: ${{ env.IMAGE_NAME }}
-          script: ${{ matrix.data.script }}
-          expected: ${{ matrix.data.expected }}
+          script: ${{ matrix.script }}
+          expected: ${{ matrix.expected }}
 
   push:
     needs: [ version, build, e2e-tests, vulnerability-scanner ]
