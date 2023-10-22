@@ -26,7 +26,7 @@ See [.github/workflows/examples.yml](.github/workflows/examples.yml) for more de
 
 ## Acknowledgements
 
-### Inspired by GitHub Script
+### Inspired by [GitHub Script][github-script]
 
 This Elixir Script action is based on the amazing [GitHub Script action][github-script],
 which is primarily built around Javascript.
@@ -37,8 +37,10 @@ Many thanks to the creators and contributors of GitHub Script.
 ## Releasing
 
 New release are automatically created when `.pkgx.yaml`'s `VERSION` key is incremented. The release must then be edited,
-ensuring the Marketplace update is enabled, and then re-save. This is a built-in limitation of GitHub releases that
-prevents Marketplace releases from being automated.
+enable the "_Publish this Action to the GitHub Marketplace_" option, and then then re-save the release.
+
+(This is a built-in limitation of GitHub releases
+that prevents Marketplace releases from being automated)
 
 [github-script]: https://github.com/marketplace/actions/github-script
 
