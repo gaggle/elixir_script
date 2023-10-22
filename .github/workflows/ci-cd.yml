@@ -16,9 +16,9 @@ jobs:
   version:
     runs-on: ubuntu-latest
     outputs:
-      semver: ${{ env.SEMVER }}
-      releasable: ${{ env.RELEASABLE }}
-      tag-exists: ${{ env.TAG_EXISTS }}
+      semver: ${{ steps.parse.outputs.semver }}
+      releasable: ${{ steps.parse.outputs.releasable }}
+      tag-exists: ${{ steps.parse.outputs.tag-exists }}
     steps:
       - uses: actions/checkout@v3
       - uses: pkgxdev/dev@v0
