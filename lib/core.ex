@@ -32,7 +32,7 @@ defmodule ElixirScript.Core do
     end
   end
 
-  def set_output(name, value) do
+  def set_output(value, name) do
     if System.get_env("GITHUB_OUTPUT") do
       EnvironmentFileCommand.issue_file_command(
         "OUTPUT",

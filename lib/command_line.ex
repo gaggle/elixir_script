@@ -13,7 +13,7 @@ defmodule ElixirScript.CommandLine do
       print_help()
     else
       result = ScriptRunner.run(get_script())
-      Core.set_output("result", result)
+      Core.set_output(result, "result")
       Logger.debug("Result output: #{inspect(result, limit: :infinity, printable_limit: :infinity)}")
     end
   end
