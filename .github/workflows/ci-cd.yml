@@ -28,6 +28,13 @@ jobs:
         with:
           semver: ${{ env.VERSION }}
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pkgxdev/dev@v0
+      - run: mix test
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -127,7 +134,7 @@ jobs:
           expected: ${{ matrix.expected }}
 
   push:
-    needs: [ version, build, e2e-tests, vulnerability-scanner ]
+    needs: [ version, test, build, e2e-tests, vulnerability-scanner ]
     runs-on: ubuntu-latest
     name: ${{ needs.version.outputs.releasable == 'true' && 'push' || 'push (dry-run)' }}
     permissions:
