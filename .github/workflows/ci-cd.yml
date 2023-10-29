@@ -71,51 +71,11 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - uses: pkgxdev/dev@v0
       - id: set-matrix
         name: Discover E2E tests
-        run: |
-          log_content() {
-            local content="$1"
-            local label="${2:-}"
-
-            if [[ -n "$label" ]]; then
-            # Replace the beginning of each line with two spaces
-            local indented_content="${content//$'\n'/$'\n'  }"
-            printf "%s:\n  %s\n" "$label" "$indented_content"
-            else
-            echo "$content"
-            fi
-          }
-
-          log_output() {
-            echo ::group::Set outputs
-            log_content "$(cat "$GITHUB_OUTPUT")" "GITHUB_OUTPUT"
-            log_content "$(cat "$GITHUB_ENV")" "GITHUB_ENV"
-            echo ::endgroup::
-          }
-
-          set_output() {
-            local value="$1"
-            local output_key="$2"
-            local env_key="${3:-}"
-
-            if [ -z "$value" ] || [ -z "$output_key" ]; then
-              echo "Missing essential arguments to set_output_and_env"
-              return 1
-            fi
-
-            # If env_key is empty, convert output_key to upper snake case
-            if [ -z "$env_key" ]; then
-              env_key=$(echo "$output_key" | awk '{print toupper($0)}' | sed 's/-/_/g')
-            fi
-
-            echo "$output_key=$value" >> "$GITHUB_OUTPUT"
-            echo "$env_key=$value" >> "$GITHUB_ENV"
-          }
-          set_output "{\"include\":$(jq -c '[.[]]' test/e2e_tests.json)}" "matrix"
-          log_output
+        run: mix e2e.set_github_matrix matrix
 
   e2e-tests:
     needs: [ build, e2e-tests-discovery ]

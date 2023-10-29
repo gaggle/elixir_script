@@ -22,10 +22,11 @@ runs:
       uses: ./
       with:
         script: |
-          ${{ matrix.data.script }}
+          ${{ matrix.script }}
     - name: Assert output
+      if: ${{ !!matrix.expected }}
       run: |
-        expected="${{ matrix.data.expected }}"
+        expected="${{ matrix.expected }}"
         output="${{steps.run.outputs.result}}"
         [[ "$output" != "$expected" ]] && echo "::error::❌ Expected '$expected', got '$output'" && exit 1
         echo "✅ Test passed, outputs.result: ${{toJSON(steps.run.outputs.result)}}"
