@@ -9,7 +9,6 @@ inputs:
     required: true
   expected:
     description: "The expected output"
-    required: true
 runs:
   using: "composite"
   steps:
