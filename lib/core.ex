@@ -42,4 +42,10 @@ defmodule ElixirScript.Core do
       Command.issue_command('set-output', name, CommandUtils.to_command_value(value))
     end
   end
+
+  def log_output do
+    if System.get_env("GITHUB_OUTPUT") do
+      EnvironmentFileCommand.log_output()
+    end
+  end
 end

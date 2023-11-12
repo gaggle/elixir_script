@@ -44,4 +44,58 @@ defmodule ElixirScript.GitHubActions.EnvironmentFileCommand do
         "#{key}<<#{delimiter}\n#{command_value}\n#{delimiter}"
     end
   end
+
+  @doc """
+  Logs the given `content` to the console. If a `label` is provided, it is
+  printed before the content, and the content is indented by two spaces.
+
+  ## Examples
+
+      iex> ElixirScript.GitHubActions.EnvironmentFileCommand.log_content("Hello, world!", "Greeting")
+      Greeting:
+        Hello, world!
+
+      iex> ElixirScript.GitHubActions.EnvironmentFileCommand.log_content("Hello, world!")
+      Hello, world!
+
+  """
+  def log_content(content, label \\ nil) do
+    indented_content = String.replace(content, "\n", "\n  ")
+
+    case label do
+      nil -> IO.puts(indented_content)
+      _ -> IO.puts("#{label}:\n  #{indented_content}")
+    end
+  end
+
+  @doc """
+  Logs the contents of the files specified by the "GITHUB_OUTPUT" and "GITHUB_ENV"
+  environment variables to the console, each under its own labeled section.
+
+  ## Example
+
+      # Assuming GITHUB_OUTPUT and GITHUB_ENV are set to valid file paths
+      # with the contents "output content" and "env content" respectively.
+      iex> ElixirScript.GitHubActions.EnvironmentFileCommand.log_output()
+      ::group::Set outputs
+      GITHUB_OUTPUT:
+        output content
+      GITHUB_ENV:
+        env content
+      ::endgroup::
+  """
+  def log_output do
+    IO.puts "::group::Set outputs"
+    "GITHUB_OUTPUT"
+    |> System.get_env()
+    |> File.read!()
+    |> log_content("GITHUB_OUTPUT")
+
+    "GITHUB_ENV"
+    |> System.get_env()
+    |> File.read!()
+    |> log_content("GITHUB_ENV")
+
+    IO.puts "::endgroup::"
+  end
 end
