@@ -33,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: pkgxdev/dev@v0
+      - run: mix deps.get
       - run: mix test
 
   build:
@@ -73,6 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: pkgxdev/dev@v0
+      - run: mix deps.get
       - id: set-matrix
         name: Discover E2E tests
         run: mix e2e.set_github_matrix matrix
