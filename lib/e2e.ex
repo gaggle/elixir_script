@@ -36,5 +36,8 @@ defmodule ElixirScript.E2e do
     }
   end
 
-  defp slugify(name), do: String.downcase(String.replace(name, ~r/\s+/, "-"))
+  defp slugify(name), do: name
+    |> String.replace(~r/\s+/, "-")
+    |> String.replace(",", "")
+    |> String.downcase()
 end
