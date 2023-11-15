@@ -24,17 +24,19 @@ defmodule ElixirScript.Context do
   end
 
   def from_github_environment() do
-    payload = if System.get_env("GITHUB_EVENT_PATH") do
-      path = System.get_env("GITHUB_EVENT_PATH")
-      if File.exists?(path) do
-        File.read!(path) |> Jason.decode!()
+    payload =
+      if System.get_env("GITHUB_EVENT_PATH") do
+        path = System.get_env("GITHUB_EVENT_PATH")
+
+        if File.exists?(path) do
+          File.read!(path) |> Jason.decode!()
+        else
+          IO.puts("GITHUB_EVENT_PATH #{path} does not exist")
+          %{}
+        end
       else
-        IO.puts("GITHUB_EVENT_PATH #{path} does not exist")
         %{}
       end
-    else
-      %{}
-    end
 
     %Context{
       payload: payload,
@@ -56,4 +58,3 @@ defmodule ElixirScript.Context do
   defp parse_int(nil), do: nil
   defp parse_int(value), do: String.to_integer(value)
 end
-

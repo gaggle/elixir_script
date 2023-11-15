@@ -11,6 +11,15 @@ defmodule Mix.Tasks.Docker do
   end
 
   defp build do
-    System.cmd("docker", ["build", "--progress", "plain", "--tag", "elixir_script:latest", "-f", ".github/Dockerfile", "."])
+    System.cmd("docker", [
+      "build",
+      "--progress",
+      "plain",
+      "--tag",
+      "elixir_script:latest",
+      "-f",
+      ".github/Dockerfile",
+      "."
+    ])
   end
 end

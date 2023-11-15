@@ -10,8 +10,9 @@ defmodule ElixirScript.E2e do
   alias ElixirScript.E2e.Entry
 
   def read_test_file(file_path \\ "test/e2e_data.exs") do
-    {data, _} = file_path
-    |> Code.eval_file()
+    {data, _} =
+      file_path
+      |> Code.eval_file()
 
     data
     |> Enum.map(&process_entry/1)
@@ -36,8 +37,10 @@ defmodule ElixirScript.E2e do
     }
   end
 
-  defp slugify(name), do: name
-    |> String.replace(~r/\s+/, "-")
-    |> String.replace(",", "")
-    |> String.downcase()
+  defp slugify(name),
+    do:
+      name
+      |> String.replace(~r/\s+/, "-")
+      |> String.replace(",", "")
+      |> String.downcase()
 end

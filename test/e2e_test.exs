@@ -10,38 +10,40 @@ defmodule ElixirScript.E2eTest do
 
   describe "read_test_file" do
     test "when providing a name it gets slugified" do
-      file_path = create_temp_file([ %{ name: "Test name", script: "" } ])
+      file_path = create_temp_file([%{name: "Test name", script: ""}])
       result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:name, :id])
-      assert result == %{ name: "Test name", id: "test-name" }
+      assert result == %{name: "Test name", id: "test-name"}
     end
 
     test "can read a simple example script" do
-      file_path = create_temp_file([ %{ name: "Test name", script: "IO.puts(\"Hello, world!\")" } ])
+      file_path = create_temp_file([%{name: "Test name", script: "IO.puts(\"Hello, world!\")"}])
       result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:file, :script])
-      assert result == %{ file: nil, script: "IO.puts(\"Hello, world!\")", }
+      assert result == %{file: nil, script: "IO.puts(\"Hello, world!\")"}
     end
 
     test "can read an expected value" do
-      file_path = create_temp_file([ %{ name: "Test name", script: "\"foo\"", expected: "foo" } ])
+      file_path = create_temp_file([%{name: "Test name", script: "\"foo\"", expected: "foo"}])
       result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:expected])
-      assert result == %{ expected: "foo" }
+      assert result == %{expected: "foo"}
     end
 
     test "can read a file example" do
-      file_path = create_temp_file([ %{ name: "Test name", file: "./foo.ex" } ])
+      file_path = create_temp_file([%{name: "Test name", file: "./foo.ex"}])
       result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:file, :script])
-      assert result == %{ file: "./foo.ex", script: nil, }
+      assert result == %{file: "./foo.ex", script: nil}
     end
 
     test "fails if neither script nor file is specified" do
-      file_path = create_temp_file([ %{ name: "Test name" } ])
+      file_path = create_temp_file([%{name: "Test name"}])
+
       assert_raise KeyError, "key :script or :file not found in: %{name: \"Test name\"}", fn ->
         E2e.read_test_file(file_path)
       end
     end
 
     test "fails if name is not specified" do
-      file_path = create_temp_file([ %{ script: "" } ])
+      file_path = create_temp_file([%{script: ""}])
+
       assert_raise KeyError, "key :name not found in: %{script: \"\"}", fn ->
         E2e.read_test_file(file_path)
       end
@@ -75,7 +77,8 @@ defmodule ElixirScript.E2eTest.Runner do
   alias ElixirScript.ScriptRunner
 
   def run_test(%Entry{name: name, file: nil, script: script, expected: expected}) do
-    actual = run_script_and_capture_output(script)
+    actual =
+      run_script_and_capture_output(script)
       |> convert_to_github_actions_output()
 
     unless is_nil(expected) do
@@ -114,12 +117,17 @@ defmodule ElixirScript.E2eTest.Runner do
   # @return A string that matches the expected output format of GitHub Actions.
   defp convert_to_github_actions_output(data) do
     case data do
-      binary when is_binary(binary) -> binary  # Already a string, no change needed.
-      list when is_list(list) ->  # Serialize the list as GitHub Actions would output it.
+      # Already a string, no change needed.
+      binary when is_binary(binary) ->
+        binary
+
+      # Serialize the list as GitHub Actions would output it.
+      list when is_list(list) ->
         list
         |> Enum.map(&convert_element_to_string/1)
         |> Enum.join(",")
         |> wrap_in_brackets()
+
       _ ->
         inspect(data)
         |> String.trim_leading("\"")
@@ -128,6 +136,7 @@ defmodule ElixirScript.E2eTest.Runner do
   end
 
   defp convert_element_to_string(element) when is_atom(element), do: Atom.to_string(element)
-  defp convert_element_to_string(element), do: element  # For any non-atom elements.
+  # For any non-atom elements.
+  defp convert_element_to_string(element), do: element
   defp wrap_in_brackets(joined), do: "[#{joined}]"
 end

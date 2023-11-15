@@ -36,10 +36,13 @@ defmodule ElixirScript.Core do
     if System.get_env("GITHUB_OUTPUT") do
       EnvironmentFileCommand.issue_file_command(
         "OUTPUT",
-        EnvironmentFileCommand.prepare_key_value_message(name, CommandUtils.to_command_value(value))
+        EnvironmentFileCommand.prepare_key_value_message(
+          name,
+          CommandUtils.to_command_value(value)
+        )
       )
     else
-      Command.issue_command('set-output', name, CommandUtils.to_command_value(value))
+      Command.issue_command(~c"set-output", name, CommandUtils.to_command_value(value))
     end
   end
 

@@ -85,7 +85,8 @@ defmodule ElixirScript.GitHubActions.EnvironmentFileCommand do
       ::endgroup::
   """
   def log_output do
-    IO.puts "::group::Set outputs"
+    IO.puts("::group::Set outputs")
+
     "GITHUB_OUTPUT"
     |> System.get_env()
     |> File.read!()
@@ -96,6 +97,6 @@ defmodule ElixirScript.GitHubActions.EnvironmentFileCommand do
     |> File.read!()
     |> log_content("GITHUB_ENV")
 
-    IO.puts "::endgroup::"
+    IO.puts("::endgroup::")
   end
 end

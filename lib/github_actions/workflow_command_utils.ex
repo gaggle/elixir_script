@@ -1,5 +1,4 @@
 defmodule ElixirScript.GitHubActions.CommandUtils do
-
   def to_command_value(nil), do: ""
 
   def to_command_value(input) when is_binary(input), do: input

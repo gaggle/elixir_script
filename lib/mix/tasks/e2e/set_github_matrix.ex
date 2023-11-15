@@ -13,11 +13,13 @@ defmodule Mix.Tasks.E2e.SetGithubMatrix do
 
   def run(args) do
     output_key = List.first(args) || "matrix"
+
     E2e.read_test_file()
     |> log_detected_tests()
     |> map_entries_for_json()
     |> encode_for_github_actions()
     |> Core.set_output(output_key)
+
     Core.log_output()
   end
 
@@ -25,7 +27,8 @@ defmodule Mix.Tasks.E2e.SetGithubMatrix do
   defp log_detected_tests(entries) do
     IO.puts("E2E tests found:")
     Enum.each(entries, &log_test_entry/1)
-    entries # Return the unchanged list of entries
+    # Return the unchanged list of entries
+    entries
   end
 
   # Logs a single E2E test entry.

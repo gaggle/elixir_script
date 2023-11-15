@@ -5,7 +5,11 @@ defmodule ElixirScript.CommandLine do
 
   def main(args \\ []) do
     Logger.debug("Running in debug mode")
-    Logger.debug("All Environment Variables: #{inspect(System.get_env(), limit: :infinity, printable_limit: :infinity)}")
+
+    Logger.debug(
+      "All Environment Variables: #{inspect(System.get_env(), limit: :infinity, printable_limit: :infinity)}"
+    )
+
     {opts, _, _} = OptionParser.parse(args, strict: [help: :boolean])
     Logger.debug("Parsed options: #{inspect(opts, limit: :infinity, printable_limit: :infinity)}")
 
@@ -14,7 +18,10 @@ defmodule ElixirScript.CommandLine do
     else
       result = ScriptRunner.run(get_script())
       Core.set_output(result, "result")
-      Logger.debug("Result output: #{inspect(result, limit: :infinity, printable_limit: :infinity)}")
+
+      Logger.debug(
+        "Result output: #{inspect(result, limit: :infinity, printable_limit: :infinity)}"
+      )
     end
   end
 
