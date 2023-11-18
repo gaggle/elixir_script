@@ -129,6 +129,7 @@ jobs:
   release:
     needs: [ version, push ]
     runs-on: ubuntu-latest
+    name: ${{ needs.version.outputs.releasable == 'true' && 'release' || 'release (dry-run)' }}
     permissions:
       contents: write
     steps:
