@@ -30,6 +30,10 @@ outputs:
     description: "Determines if the current state of the codebase should released, determined by whether the commit is for the default branch and if the version it's associated with has already been released"
     value: ${{ steps.entrypoint.outputs.releasable }}
 
+  previous-release-tag:
+    description: "The previous release's tag"
+    value: ${{ steps.entrypoint.outputs.previous-release-tag }}
+
 runs:
   using: "composite"
   steps:
@@ -37,5 +41,6 @@ runs:
       id: entrypoint
       shell: bash
       env:
-        INPUT_SEMVER: ${{ inputs.semver }}
+        GH_TOKEN: ${{ github.token }}
         INPUT_DEFAULT_BRANCH: ${{ inputs.default-branch }}
+        INPUT_SEMVER: ${{ inputs.semver }}

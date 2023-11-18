@@ -65,6 +65,19 @@ check_git_tag_exists() {
   git show-ref --tags "v$1" --quiet && echo "true" || echo "false"
 }
 
+is_valid_semver() {
+  local version=$1
+  if [[ $version =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+    return 0 # valid semver
+  else
+    return 1 # invalid semver
+  fi
+}
+
+get_previous_release_tag() {
+  echo "$(gh release list | awk 'NR==1{print $3}')"
+}
+
 debug_log "Processing default_branch..."
 default_branch="$INPUT_DEFAULT_BRANCH"
 debug_log "  $default_branch"
@@ -85,9 +98,14 @@ debug_log "Processing releasable..."
 releasable="$( [ "$ref" == "refs/heads/${default_branch}" ] && [ "$tag_exists" == "false" ] && echo "true" || echo "false" )"
 debug_log "  $releasable"
 
+debug_log "Processing previous_release_tag..."
+previous_release_tag=$(get_previous_release_tag "$semver")
+debug_log "  $previous_release_tag"
+
 set_output "$(parse_semver_component "$semver" 1)" "major"
 set_output "$(parse_semver_component "$semver" 2)" "minor"
 set_output "$(parse_semver_component "$semver" 3)" "patch"
+set_output "$previous_release_tag" "previous-release-tag"
 set_output "$releasable" "releasable"
 set_output "$semver" "semver"
 set_output "$tag_exists" "tag-exists"
