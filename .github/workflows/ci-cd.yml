@@ -128,15 +128,35 @@ jobs:
 
   release:
     needs: [ version, push ]
-    if: needs.version.outputs.releasable == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v3
+      - name: Generate release description
+        run: |
+          log_content() {
+            local content="$1"
+            local label="${2:-}"
+          
+            if [[ -n "$label" ]]; then
+              # Replace the beginning of each line with two spaces
+              local indented_content="${content//$'\n'/$'\n'  }"
+              printf "%s:\n  %s\n" "$label" "$indented_content"
+            else
+              echo "$content"
+            fi
+          }
+          CHANGELOG_URL="https://github.com/${{ github.event.repository.full_name }}/compare/${{ needs.version.outputs.previous-release-tag }}...v${{ needs.version.outputs.semver }}"
+          echo "BODY=**Full Changelog**: $CHANGELOG_URL" >> $GITHUB_ENV
+          echo ::group::Set outputs
+          log_content "$(cat "$GITHUB_ENV")" "GITHUB_ENV"
+          echo ::endgroup::
+
       - uses: softprops/action-gh-release@v1
+        if: needs.version.outputs.releasable == 'true'
         with:
-          body: "**Full Changelog**: https://github.com/${{ github.event.repository.full_name }}/compare/${{ needs.version.outputs.previous-release-tag }}...v${{ needs.version.outputs.semver }}"
+          body: ${{ env.BODY }}
           generate_release_notes: true
           tag_name: v${{ needs.version.outputs.semver }}
           token: ${{ secrets.PAT }} # using our own PAT so other workflows run
