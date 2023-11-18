@@ -58,10 +58,6 @@ parse_semver_component() {
 }
 
 check_git_tag_exists() {
-  git fetch --prune --unshallow --tags > /dev/null || {
-    echo "Failed to fetch git tags. Make sure 'actions/checkout' was used before this action."
-    exit 1
-  }
   git show-ref --tags "v$1" --quiet && echo "true" || echo "false"
 }
 
