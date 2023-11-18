@@ -65,17 +65,30 @@ check_git_tag_exists() {
   git show-ref --tags "v$1" --quiet && echo "true" || echo "false"
 }
 
-default_branch="$INPUT_DEFAULT_BRANCH"; debug_log "default_branch=$default_branch"
-ref=$GITHUB_REF; debug_log "ref=$ref"
-semver="$INPUT_SEMVER"; debug_log "semver=$semver"
-tag_exists=$(check_git_tag_exists "$semver"); debug_log "tag_exists=$tag_exists"
-releasable="$( [ "$ref" == "refs/heads/${default_branch}" ] && [ "$tag_exists" == "false" ] && echo "true" || echo "false" )"
-debug_log "releasable=$releasable"
+debug_log "Processing default_branch..."
+default_branch="$INPUT_DEFAULT_BRANCH"
+debug_log "  $default_branch"
 
-set_output "$semver" "semver"
+debug_log "Processing ref..."
+ref=$GITHUB_REF
+debug_log "  $ref"
+
+debug_log "Processing semver..."
+semver="$INPUT_SEMVER"
+debug_log "  $semver"
+
+debug_log "Processing tag_exists..."
+tag_exists=$(check_git_tag_exists "$semver")
+debug_log "  $tag_exists"
+
+debug_log "Processing releasable..."
+releasable="$( [ "$ref" == "refs/heads/${default_branch}" ] && [ "$tag_exists" == "false" ] && echo "true" || echo "false" )"
+debug_log "  $releasable"
+
 set_output "$(parse_semver_component "$semver" 1)" "major"
 set_output "$(parse_semver_component "$semver" 2)" "minor"
 set_output "$(parse_semver_component "$semver" 3)" "patch"
-set_output "$tag_exists" "tag-exists"
 set_output "$releasable" "releasable"
+set_output "$semver" "semver"
+set_output "$tag_exists" "tag-exists"
 log_output
