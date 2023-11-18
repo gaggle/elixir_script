@@ -79,7 +79,9 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
   end
 
   defp generate_job(%Entry{} = entry) do
-    pre_indented_script_lines = entry.script |> String.trim_trailing |> dedent_string |> indent_string(10)
+    pre_indented_script_lines =
+      entry.script |> String.trim_trailing() |> dedent_string |> indent_string(10)
+
     #                                           ↑
     # No trailing empty lines because we tightly control how script-lines are placed within the template
     #                                                                                                  ↑↑
@@ -119,12 +121,15 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
   @spec dedent_string(String.t()) :: String.t()
   defp dedent_string(str) do
     lines = String.split(str, "\n")
+
     smallest_indent =
       lines
-      |> Enum.reject(&String.trim(&1) == "") # Ignore empty or whitespace-only lines
+      # Ignore empty or whitespace-only lines
+      |> Enum.reject(&(String.trim(&1) == ""))
       |> Enum.map(&String.length(Regex.replace(~r/^(\s*).*$/, &1, "\\1")))
       |> Enum.min()
-      |> Kernel.||(0) # Default to 0 if the list is empty
+      # Default to 0 if the list is empty
+      |> Kernel.||(0)
 
     lines
     |> Enum.map(fn line ->
