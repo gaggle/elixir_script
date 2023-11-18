@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+# This script is used to identify and fix formatting issues.
+# It can be run in two modes:
+#
+# Usage:
+#   ./bin/format            # To update and format the code.
+#   ./bin/format --check    # To check for formatting issues.
+
+if [[ $# -gt 0 && "$1" == "--check" ]]; then
+    echo "Checking for formatting issues..."
+    mix e2e.update_examples_workflow --check
+    mix format --check-formatted
+else
+    echo "Fixing formatting issues..."
+    mix e2e.update_examples_workflow
+    mix format
+fi

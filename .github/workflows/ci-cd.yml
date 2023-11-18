@@ -44,6 +44,7 @@ jobs:
       - uses: pkgxdev/dev@v0
       - run: mix deps.get
       - run: mix e2e.update_examples_workflow --check
+      - run: bin/format --check
 
   build:
     runs-on: ubuntu-latest
