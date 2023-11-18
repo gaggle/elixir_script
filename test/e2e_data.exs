@@ -11,12 +11,21 @@
   },
   %{
     name: "IO is visible in logs",
-    script: "IO.puts(\"Hello world\")"
+    script: """
+    IO.puts("Hello world")
+    """
   },
   %{
     name: "Event context is available",
     script: "Map.keys(context) |> Enum.sort",
     expected:
       "[__struct__,action,actor,api_url,event_name,graphql_url,job,payload,ref,run_id,run_number,server_url,sha,workflow]"
+  },
+  %{
+    name: "Multiline scripts are possible",
+    script: """
+    IO.puts("Hello world")
+    "result"
+    """
   }
 ]
