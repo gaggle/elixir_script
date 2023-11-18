@@ -1,4 +1,5 @@
 #!/bin/bash
+eval "$(pkgx --shellcode)"; env +yq
 set -euo pipefail
 
 debug_log() {
@@ -74,6 +75,20 @@ get_previous_release_tag() {
   echo "$(gh release list | awk 'NR==1{print $3}')"
 }
 
+get_version_from_pkgx() {
+  local key=$1
+  local file=".pkgx.yaml"
+  local version
+
+  version=$(yq e "$key" "$file" | tr -d '=')
+  if [ -z "$version" ]; then
+    echo "Could not find the key '$key' in the file '$file'"
+    exit 1
+  fi
+
+  echo "$version"
+}
+
 debug_log "Processing default_branch..."
 default_branch="$INPUT_DEFAULT_BRANCH"
 debug_log "  $default_branch"
@@ -98,9 +113,19 @@ debug_log "Processing previous_release_tag..."
 previous_release_tag=$(get_previous_release_tag "$semver")
 debug_log "  $previous_release_tag"
 
+debug_log "Processing otp_version..."
+otp_version=$(get_version_from_pkgx ".dependencies.\"erlang.org\"" ".pkgx.yaml")
+debug_log "  $otp_version"
+
+debug_log "Processing elixir_version..."
+elixir_version=$(get_version_from_pkgx ".dependencies.\"elixir-lang.org\"" ".pkgx.yaml")
+debug_log "  $elixir_version"
+
 set_output "$(parse_semver_component "$semver" 1)" "major"
 set_output "$(parse_semver_component "$semver" 2)" "minor"
 set_output "$(parse_semver_component "$semver" 3)" "patch"
+set_output "$elixir_version" "elixir-version"
+set_output "$otp_version" "otp-version"
 set_output "$previous_release_tag" "previous-release-tag"
 set_output "$releasable" "releasable"
 set_output "$semver" "semver"

@@ -34,6 +34,14 @@ outputs:
     description: "The previous release's tag"
     value: ${{ steps.entrypoint.outputs.previous-release-tag }}
 
+  elixir-version:
+    description: "The currently specified Elixir version"
+    value: ${{ steps.entrypoint.outputs.elixir-version }}
+
+  otp-version:
+    description: "The currently specified Elixir OTP version"
+    value: ${{ steps.entrypoint.outputs.otp-version }}
+
 runs:
   using: "composite"
   steps:
