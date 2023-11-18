@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# This script is used to perform an audit of the Elixir project.
+# It checks for formatting issues, static code analysis, and code style consistency.
+#
+# Usage:
+#   ./bin/audit    # Run to audit your project.
+
+echo "Checking code formatting..."
+bin/format --check
+
+echo "Running static code analysis with dialyzer..."
+mix dialyzer
+
+echo "Checking code style with Credo..."
+mix credo --strict

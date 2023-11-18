@@ -7,7 +7,8 @@ defmodule ElixirScript.MixProject do
       version: "0.0.0",
       elixir: "~> 1.15",
       escript: escript(),
-      deps: deps()
+      deps: deps(),
+      dialyzer: [plt_add_apps: [:mix]]
     ]
   end
 
