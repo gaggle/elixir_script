@@ -52,7 +52,8 @@ defmodule ElixirScript.E2eTest do
 
   describe "end-to-end tests" do
     test "run e2e tests" do
-      Enum.each(E2e.read_test_file(), &Runner.run_test/1)
+      E2e.read_test_file()
+      |> Enum.each(&Runner.run_test/1)
     end
   end
 
@@ -124,8 +125,7 @@ defmodule ElixirScript.E2eTest.Runner do
       # Serialize the list as GitHub Actions would output it.
       list when is_list(list) ->
         list
-        |> Enum.map(&convert_element_to_string/1)
-        |> Enum.join(",")
+        |> Enum.map_join(",", &convert_element_to_string/1)
         |> wrap_in_brackets()
 
       _ ->

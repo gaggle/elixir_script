@@ -1,34 +1,59 @@
 defmodule ElixirScript.CommandLine do
+  @moduledoc """
+  Main entrypoint for ElixirScript.
+  Manages the parsing of command-line arguments, configures logger, and delegates work into sub-systems.
+  """
+
   alias ElixirScript.Core
   alias ElixirScript.CustomLogger, as: Logger
   alias ElixirScript.ScriptRunner
 
-  def main(args \\ []) do
-    Logger.debug("Running in debug mode")
+  defmodule ParsedArgs do
+    @moduledoc """
+    Struct for parsed args
+    """
+    defstruct debug?: false, help?: false, script: nil
+  end
 
-    Logger.debug(
-      "All Environment Variables: #{inspect(System.get_env(), limit: :infinity, printable_limit: :infinity)}"
-    )
+  def main(args, opts \\ []) do
+    parsed_args = parse_args!(args)
+    log_level = if parsed_args.debug?, do: :debug, else: :info
+    Logger.configure(level: log_level)
 
-    {opts, _, _} = OptionParser.parse(args, strict: [help: :boolean])
-    Logger.debug("Parsed options: #{inspect(opts, limit: :infinity, printable_limit: :infinity)}")
+    runner = Keyword.get(opts, :runner, &ScriptRunner.run/1)
+    Logger.debug("Running in debug mode, using runner: #{inspect(runner)}")
 
-    if opts[:help] do
+    Logger.debug("Environment Variables: #{inf_inspect(System.get_env())}")
+
+    Logger.debug("Parsed args: #{inf_inspect(parsed_args)}")
+
+    if parsed_args.help? do
       print_help()
+      System.halt(0)
     else
-      result = ScriptRunner.run(get_script())
+      Logger.debug("Script input: #{inf_inspect(parsed_args.script)}")
+      result = runner.(parsed_args.script)
       Core.set_output(result, "result")
-
-      Logger.debug(
-        "Result output: #{inspect(result, limit: :infinity, printable_limit: :infinity)}"
-      )
+      Logger.debug("Result output: #{inspect(result, pretty: true)}")
     end
   end
 
-  defp get_script do
-    script = Core.get_env_input("script", required: true)
-    Logger.debug("Script input: #{inspect(script, limit: :infinity, printable_limit: :infinity)}")
-    script
+  def parse_args!(args) do
+    {parsed, _remaining_args} =
+      OptionParser.parse!(args,
+        strict: [script: :string, debug: :boolean, help: :boolean],
+        aliases: [debug: :d, help: :h, script: :s]
+      )
+
+    debug? = Keyword.get(parsed, :debug, System.get_env("INPUT_DEBUG") == "true")
+    script = Keyword.get(parsed, :script, System.get_env("INPUT_SCRIPT"))
+    help? = Keyword.get(parsed, :help, false)
+
+    %ParsedArgs{
+      debug?: debug?,
+      help?: help?,
+      script: script
+    }
   end
 
   defp print_help do
@@ -37,10 +62,16 @@ defmodule ElixirScript.CommandLine do
       script [OPTIONS]
 
     Options:
-      --help          Show this help message and exit.
+      --script,-s       Specifies the script to run [INPUT_SCRIPT]
+      --debug, -d       Enables debug mode [INPUT_DEBUG]
+      --help, -h        Show this help message and exit
 
     Example:
-      INPUT_SCRIPT="IO.puts('Hello, world!')" script
+      script --script "IO.puts('Hello, world!')"
     """)
+  end
+
+  def inf_inspect(exec) do
+    inspect(exec, pretty: true, limit: :infinity, printable_limit: :infinity)
   end
 end

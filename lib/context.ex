@@ -1,6 +1,10 @@
 defmodule ElixirScript.Context do
+  @moduledoc """
+  Constructs a structured context of the GitHub Actions environment variables, for use within ElixirScript.
+  """
   alias __MODULE__
 
+  @derive Jason.Encoder
   defstruct [
     :payload,
     :event_name,
@@ -17,43 +21,44 @@ defmodule ElixirScript.Context do
     :graphql_url
   ]
 
-  defimpl Jason.Encoder, for: Context do
-    def encode(%Context{} = context, opts) do
-      Map.from_struct(context) |> Jason.Encode.map(opts)
+  def from_github_environment do
+    %Context{
+      payload: read_payload(),
+      event_name: fetch_env("GITHUB_EVENT_NAME", ""),
+      sha: fetch_env("GITHUB_SHA", ""),
+      ref: fetch_env("GITHUB_REF", ""),
+      workflow: fetch_env("GITHUB_WORKFLOW", ""),
+      action: fetch_env("GITHUB_ACTION", ""),
+      actor: fetch_env("GITHUB_ACTOR", ""),
+      job: fetch_env("GITHUB_JOB", ""),
+      run_number: fetch_env("GITHUB_RUN_NUMBER"),
+      run_id: fetch_env("GITHUB_RUN_ID") |> parse_int(),
+      api_url: fetch_env("GITHUB_API_URL", "https://api.github.com"),
+      server_url: fetch_env("GITHUB_SERVER_URL", "https://github.com"),
+      graphql_url: fetch_env("GITHUB_GRAPHQL_URL", "https://api.github.com/graphql")
+    }
+  end
+
+  defp read_payload do
+    fetch_env("GITHUB_EVENT_PATH")
+    |> maybe_read_file()
+  end
+
+  defp maybe_read_file(nil), do: %{}
+
+  defp maybe_read_file(path) do
+    case File.read(path) do
+      {:ok, contents} ->
+        contents |> Jason.decode!()
+
+      {:error, _reason} ->
+        IO.puts("Error reading GITHUB_EVENT_PATH #{path}")
+        %{}
     end
   end
 
-  def from_github_environment() do
-    payload =
-      if System.get_env("GITHUB_EVENT_PATH") do
-        path = System.get_env("GITHUB_EVENT_PATH")
-
-        if File.exists?(path) do
-          File.read!(path) |> Jason.decode!()
-        else
-          IO.puts("GITHUB_EVENT_PATH #{path} does not exist")
-          %{}
-        end
-      else
-        %{}
-      end
-
-    %Context{
-      payload: payload,
-      event_name: System.get_env("GITHUB_EVENT_NAME") || "",
-      sha: System.get_env("GITHUB_SHA") || "",
-      ref: System.get_env("GITHUB_REF") || "",
-      workflow: System.get_env("GITHUB_WORKFLOW") || "",
-      action: System.get_env("GITHUB_ACTION") || "",
-      actor: System.get_env("GITHUB_ACTOR") || "",
-      job: System.get_env("GITHUB_JOB") || "",
-      run_number: System.get_env("GITHUB_RUN_NUMBER") |> parse_int(),
-      run_id: System.get_env("GITHUB_RUN_ID") |> parse_int(),
-      api_url: System.get_env("GITHUB_API_URL") || "https://api.github.com",
-      server_url: System.get_env("GITHUB_SERVER_URL") || "https://github.com",
-      graphql_url: System.get_env("GITHUB_GRAPHQL_URL") || "https://api.github.com/graphql"
-    }
-  end
+  defp fetch_env(var), do: System.get_env(var)
+  defp fetch_env(var, default), do: fetch_env(var) || default
 
   defp parse_int(nil), do: nil
   defp parse_int(value), do: String.to_integer(value)

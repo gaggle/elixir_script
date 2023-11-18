@@ -7,6 +7,10 @@ defmodule ElixirScript.E2e.Entry do
 end
 
 defmodule ElixirScript.E2e do
+  @moduledoc """
+  Provides functionality for reading and processing end-to-end (E2E) test data,
+  transforming the data into Entry structs that can be consumed in different contexts.
+  """
   alias ElixirScript.E2e.Entry
 
   def read_test_file(file_path \\ "test/e2e_data.exs") do
@@ -24,7 +28,7 @@ defmodule ElixirScript.E2e do
     file = Map.get(entry, :file)
     expected = Map.get(entry, :expected)
 
-    if(!script && !file) do
+    if !script && !file do
       raise(KeyError, "key :script or :file not found in: #{inspect(entry)}")
     end
 

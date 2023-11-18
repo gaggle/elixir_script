@@ -1,9 +1,12 @@
 defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
+  @moduledoc """
+  Mix task to automate the `.github/workflows/examples.yml` GitHub Actions workflow file containing end-to-end (E2E) examples.
+  This task constructs the YAML file by reading the E2E test data,
+  and supports a `--check` option to verify if the workflow file is up-to-date which is used in CI to check for consistency.
+  """
   use Mix.Task
   alias ElixirScript.E2e
   alias ElixirScript.E2e.Entry
-
-  @shortdoc "Updates the examples workflow. Use --check to fail if file needs updating"
 
   @workflow_file ".github/workflows/examples.yml"
 
@@ -53,8 +56,7 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
 
   def generate_workflow(entries) do
     jobs =
-      Enum.map(entries, fn entry -> generate_job(entry) end)
-      |> Enum.join("\n")
+      Enum.map_join(entries, "\n", fn entry -> generate_job(entry) end)
       |> indent_string(2)
 
     """
@@ -108,14 +110,13 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
 
     str
     |> String.split(~r/\n/)
-    |> Enum.map(fn
+    |> Enum.map_join("\n", fn
       line ->
         case String.trim(line) do
           "" -> line
           _ -> indentation <> line
         end
     end)
-    |> Enum.join("\n")
   end
 
   @spec dedent_string(String.t()) :: String.t()
@@ -132,10 +133,9 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
       |> Kernel.||(0)
 
     lines
-    |> Enum.map(fn line ->
+    |> Enum.map_join("\n", fn line ->
       slice_length = Enum.min([String.length(line), smallest_indent])
       String.slice(line, slice_length..-1)
     end)
-    |> Enum.join("\n")
   end
 end

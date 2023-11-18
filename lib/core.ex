@@ -1,17 +1,12 @@
 defmodule ElixirScript.Core do
-  alias ElixirScript.GitHubActions.Command
-  alias ElixirScript.GitHubActions.CommandUtils
+  @moduledoc """
+  Provides core functionalities for ElixirScript,
+  handling the retrieval and sanitization of GitHub Actions environment inputs and outputs.
+  """
+
   alias ElixirScript.GitHubActions.EnvironmentFileCommand
-
-  def parse_args(args) do
-    aliases = [script: :s, debug: :d]
-    parsed = OptionParser.parse(args, aliases: aliases)
-
-    case parsed do
-      {opts, _remaining_args, _invalid_opts} ->
-        %{script: Map.get(opts, :script), debug: Map.get(opts, :debug)}
-    end
-  end
+  alias ElixirScript.GitHubActions.WorkflowCommand
+  alias ElixirScript.GitHubActions.WorkflowCommandUtils
 
   def get_env_input(name, opts \\ []) do
     required = Keyword.get(opts, :required, false)
@@ -38,11 +33,15 @@ defmodule ElixirScript.Core do
         "OUTPUT",
         EnvironmentFileCommand.prepare_key_value_message(
           name,
-          CommandUtils.to_command_value(value)
+          WorkflowCommandUtils.to_command_value(value)
         )
       )
     else
-      Command.issue_command(~c"set-output", name, CommandUtils.to_command_value(value))
+      WorkflowCommand.issue_command(
+        ~c"set-output",
+        name,
+        WorkflowCommandUtils.to_command_value(value)
+      )
     end
   end
 

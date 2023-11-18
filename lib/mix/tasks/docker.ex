@@ -1,7 +1,8 @@
 defmodule Mix.Tasks.Docker do
+  @moduledoc """
+  A Mix task for managing Docker operations
+  """
   use Mix.Task
-
-  @shortdoc "Manages Docker operations for the project."
 
   def run(args) do
     case args do

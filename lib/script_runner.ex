@@ -1,4 +1,7 @@
 defmodule ElixirScript.ScriptRunner do
+  @moduledoc """
+  Executes dynamic Elixir script content, allowing for the execution of arbitrary code snippets.
+  """
   alias ElixirScript.Context
 
   def run(script) do

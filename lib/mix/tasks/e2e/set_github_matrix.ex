@@ -1,15 +1,12 @@
 defmodule Mix.Tasks.E2e.SetGithubMatrix do
+  @moduledoc """
+  Mix task to generate matrix information from E2E test data for GitHub Actions workflows.
+  """
   use Mix.Task
 
   alias ElixirScript.Core
   alias ElixirScript.E2e
   alias ElixirScript.E2e.Entry
-
-  @moduledoc """
-  Mix task to generate matrix information from E2E test data for GitHub Actions workflows.
-  """
-
-  @shortdoc "Generates matrix information from the E2E data file, to feed into a GitHub Actions matrix."
 
   def run(args) do
     output_key = List.first(args) || "matrix"

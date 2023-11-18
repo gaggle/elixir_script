@@ -4,7 +4,7 @@ defmodule ElixirScript.GitHubActions.EnvironmentFileCommand do
 
   This module is designed to interact with GitHub Actions by issuing
   workflow commands to environment files as specified in the GitHub Actions documentation:
-  [Workflow Commands for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#environment-files).
+  [Workflow Environment File Commands for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#environment-files).
   """
 
   def issue_file_command(command, command_value) do

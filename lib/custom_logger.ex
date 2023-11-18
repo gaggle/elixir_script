@@ -7,8 +7,13 @@ defmodule ElixirScript.CustomLogger do
     if debug_mode?(), do: log(:debug, message)
   end
 
-  defp debug_mode?() do
-    System.get_env("INPUT_DEBUG") == "true"
+  def configure(opts \\ []) do
+    level = Keyword.get(opts, :level, :info)
+    Application.put_env(:elixir_script, :log_level, level)
+  end
+
+  defp debug_mode? do
+    Application.get_env(:elixir_script, :log_level, :info) == :debug
   end
 
   defp log(level, message) do
