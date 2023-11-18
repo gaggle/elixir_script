@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       previous-release-tag: ${{ steps.parse.outputs.previous-release-tag }}
-      semver: ${{ steps.parse.outputs.semver }}
       releasable: ${{ steps.parse.outputs.releasable }}
+      semver: ${{ steps.parse.outputs.semver }}
       tag-exists: ${{ steps.parse.outputs.tag-exists }}
     steps:
       - uses: actions/checkout@v3
