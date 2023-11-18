@@ -16,6 +16,8 @@ jobs:
   version:
     runs-on: ubuntu-latest
     outputs:
+      elixir-version: ${{ steps.parse.outputs.elixir-version }}
+      otp-version: ${{ steps.parse.outputs.otp-version }}
       previous-release-tag: ${{ steps.parse.outputs.previous-release-tag }}
       releasable: ${{ steps.parse.outputs.releasable }}
       semver: ${{ steps.parse.outputs.semver }}
@@ -38,13 +40,37 @@ jobs:
       - run: mix test
 
   audit:
+    needs: [ version ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: pkgxdev/dev@v0
       - run: mix deps.get
-      - run: mix e2e.update_examples_workflow --check
-      - run: bin/format --check
+      - name: Restore PLT cache
+        id: plt_cache
+        uses: actions/cache/restore@v3
+        with:
+          key: |
+            plt-${{ runner.os }}-${{ needs.version.outputs.otp-version }}-${{ needs.version.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            plt-${{ runner.os }}-${{ needs.version.outputs.otp-version }}-${{ needs.version.outputs.elixir-version }}-
+          path: |
+            priv/plts
+      - name: Create PLTs
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        run: mix dialyzer --plt
+      # By default, the GitHub Cache action will only save the cache if all steps in the job succeed,
+      # so we separate the cache restore and save steps in case running dialyzer fails.
+      - name: Save PLT cache
+        id: plt_cache_save
+        uses: actions/cache/save@v3
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        with:
+          key: |
+            plt-${{ runner.os }}-${{ needs.version.outputs.otp-version }}-${{ needs.version.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}
+          path: |
+            priv/plts
+      - run: bin/audit
 
   build:
     runs-on: ubuntu-latest

@@ -10,7 +10,11 @@ echo "Checking code formatting..."
 bin/format --check
 
 echo "Running static code analysis with dialyzer..."
-mix dialyzer
+if [ "${CI:-}" == "true" ]; then
+    mix dialyzer --format github
+else
+    mix dialyzer
+fi
 
 echo "Checking code style with Credo..."
 mix credo --strict

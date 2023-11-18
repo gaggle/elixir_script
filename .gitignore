@@ -30,3 +30,7 @@ elixir_script-*.tar
 
 # The compiled artifact
 elixir_script
+
+# Dialyzer
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

@@ -8,7 +8,11 @@ defmodule ElixirScript.MixProject do
       elixir: "~> 1.15",
       escript: escript(),
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [
+        plt_add_apps: [:mix],
+        plt_core_path: "priv/plts/core.plt",
+        plt_local_path: "priv/plts/project.plt"
+      ]
     ]
   end
 
