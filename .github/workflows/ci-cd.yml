@@ -136,6 +136,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: softprops/action-gh-release@v1
         with:
+          body: "**Full Changelog**: https://github.com/${{ github.event.repository.full_name }}/compare/${{ needs.version.outputs.previous-release-tag }}...v${{ needs.version.outputs.semver }}"
           generate_release_notes: true
           tag_name: v${{ needs.version.outputs.semver }}
           token: ${{ secrets.PAT }} # using our own PAT so other workflows run
