@@ -1,0 +1,46 @@
+name: 'Dialyzer Cache'
+description: 'Handles caching for Dialyzer PLTs'
+inputs:
+  otp-version:
+    description: 'OTP version'
+    required: true
+  elixir-version:
+    description: 'Elixir version'
+    required: true
+  mix-lock-hash:
+    description: 'Hash of the mix.lock file, defaults to hashing `**/mix.lock`'
+    required: false
+    default: ''
+  build-plt-command:
+    description: 'The command to run to build PLT(s), defaults to `mix dialyzer --plt`'
+    default: mix dialyzer --plt
+runs:
+  using: 'composite'
+  steps:
+    - name: Calculate mix.lock hash
+      if: inputs.mix-lock-hash == ''
+      id: mix-lock-hash
+      run: echo "hash=${{ hashFiles('**/mix.lock') }}" >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Restore PLT cache
+      id: restore-cache
+      uses: actions/cache/restore@v3
+      with:
+        key: |
+          plt-${{ runner.os }}-${{ inputs.otp-version }}-${{ inputs.elixir-version }}-${{ steps.mix-lock-hash.outputs.hash || inputs.mix-lock-hash }}
+        restore-keys: |
+          plt-${{ runner.os }}-${{ inputs.otp-version }}-${{ inputs.elixir-version }}-
+        path: |
+          priv/plts
+    - name: Create PLTs
+      if: steps.restore-cache.outputs.cache-hit != 'true'
+      run: ${{ inputs.build-plt-command }}
+      shell: bash
+    - name: Save PLT cache
+      if: steps.restore-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v3
+      with:
+        key: |
+          plt-${{ runner.os }}-${{ inputs.otp-version }}-${{ inputs.elixir-version }}-${{ steps.mix-lock-hash.outputs.hash || inputs.mix-lock-hash }}
+        path: |
+          priv/plts
