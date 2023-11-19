@@ -36,8 +36,9 @@ Many thanks to the creators and contributors of GitHub Script.
 
 ## Releasing
 
-New release are automatically created when `.pkgx.yaml`'s `VERSION` key is incremented. The release must then be edited,
-enable the "_Publish this Action to the GitHub Marketplace_" option, and then then re-save the release.
+[New releases](https://github.com/gaggle/elixir_script/releases) are automatically created
+when [`.pkgx.yaml`](.pkgx.yaml)'s `VERSION` key is incremented.
+The release must then be edited and then immediately resaved to publish it to the Actions Marketplace
 
 (This is a built-in limitation of GitHub releases
 that prevents Marketplace releases from being automated)
