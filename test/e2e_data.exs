@@ -17,7 +17,10 @@
   },
   %{
     name: "Event context is available",
-    script: "Map.keys(context) |> Enum.sort",
+    script: """
+    IO.inspect(context)
+    Map.keys(context) |> Enum.sort
+    """,
     expected:
       "[__struct__,action,actor,api_url,event_name,graphql_url,job,payload,ref,run_id,run_number,server_url,sha,workflow]"
   },

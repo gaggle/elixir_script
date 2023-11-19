@@ -49,6 +49,7 @@ jobs:
         id: script
         with:
           script: |
+            IO.inspect(context)
             Map.keys(context) |> Enum.sort
 
       - name: Get result
