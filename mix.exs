@@ -12,7 +12,8 @@ defmodule ElixirScript.MixProject do
         plt_add_apps: [:mix],
         plt_core_path: "priv/plts/core.plt",
         plt_local_path: "priv/plts/project.plt"
-      ]
+      ],
+      preferred_cli_env: ["test.watch": :test]
     ]
   end
 
@@ -28,7 +29,7 @@ defmodule ElixirScript.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.4"},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 end
