@@ -38,6 +38,7 @@
         def greet(name), do: "Oh hi \#{name}!"
       end
       Greeter.greet("Mark")
-    """
+    """,
+    expected: "Oh hi Mark!"
   }
 ]
