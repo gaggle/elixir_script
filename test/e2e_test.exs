@@ -4,9 +4,13 @@ defmodule ElixirScript.E2eTest do
   ensuring that the test file reading and parsing behaviors are working as expected.
   """
   use ExUnit.Case
+  import Mox
 
   alias ElixirScript.E2e
   alias ElixirScript.E2eTest.Runner
+  alias Test.Fixtures.GitHubWorkflowRun
+
+  setup :verify_on_exit!
 
   describe "read_test_file" do
     test "when providing a name it gets slugified" do
@@ -52,6 +56,10 @@ defmodule ElixirScript.E2eTest do
 
   describe "end-to-end tests" do
     test "run e2e tests" do
+      stub(SystemEnvBehaviourMock, :get_env, fn varname, default ->
+        GitHubWorkflowRun.env()[varname] || default
+      end)
+
       E2e.read_test_file()
       |> Enum.each(&Runner.run_test/1)
     end

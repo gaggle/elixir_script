@@ -24,32 +24,32 @@ defmodule ElixirScript.Context do
   def from_github_environment do
     %Context{
       payload: read_payload(),
-      event_name: fetch_env("GITHUB_EVENT_NAME", ""),
-      sha: fetch_env("GITHUB_SHA", ""),
-      ref: fetch_env("GITHUB_REF", ""),
-      workflow: fetch_env("GITHUB_WORKFLOW", ""),
-      action: fetch_env("GITHUB_ACTION", ""),
-      actor: fetch_env("GITHUB_ACTOR", ""),
-      job: fetch_env("GITHUB_JOB", ""),
-      run_number: fetch_env("GITHUB_RUN_NUMBER"),
-      run_id: fetch_env("GITHUB_RUN_ID") |> parse_int(),
-      api_url: fetch_env("GITHUB_API_URL", "https://api.github.com"),
-      server_url: fetch_env("GITHUB_SERVER_URL", "https://github.com"),
-      graphql_url: fetch_env("GITHUB_GRAPHQL_URL", "https://api.github.com/graphql")
+      event_name: get_env("GITHUB_EVENT_NAME", ""),
+      sha: get_env("GITHUB_SHA", ""),
+      ref: get_env("GITHUB_REF", ""),
+      workflow: get_env("GITHUB_WORKFLOW", ""),
+      action: get_env("GITHUB_ACTION", ""),
+      actor: get_env("GITHUB_ACTOR", ""),
+      job: get_env("GITHUB_JOB", ""),
+      run_number: get_env("GITHUB_RUN_NUMBER") |> parse_int(),
+      run_id: get_env("GITHUB_RUN_ID") |> parse_int(),
+      api_url: get_env("GITHUB_API_URL", "https://api.github.com"),
+      server_url: get_env("GITHUB_SERVER_URL", "https://github.com"),
+      graphql_url: get_env("GITHUB_GRAPHQL_URL", "https://api.github.com/graphql")
     }
   end
 
   defp read_payload do
-    fetch_env("GITHUB_EVENT_PATH")
-    |> maybe_read_file()
+    get_env("GITHUB_EVENT_PATH") |> maybe_read_file(keys: :atoms)
+    # ↑ The GitHub event is a well-defined data-structure, it's fine to keep as atoms.
   end
 
-  defp maybe_read_file(nil), do: %{}
+  defp maybe_read_file(nil, _), do: %{}
 
-  defp maybe_read_file(path) do
+  defp maybe_read_file(path, opts) do
     case File.read(path) do
       {:ok, contents} ->
-        contents |> Jason.decode!()
+        contents |> Jason.decode!(opts)
 
       {:error, _reason} ->
         IO.puts("Error reading GITHUB_EVENT_PATH #{path}")
@@ -57,9 +57,10 @@ defmodule ElixirScript.Context do
     end
   end
 
-  defp fetch_env(var), do: System.get_env(var)
-  defp fetch_env(var, default), do: fetch_env(var) || default
+  defp get_env(var, default \\ nil), do: system_env_impl().get_env(var, default)
 
   defp parse_int(nil), do: nil
   defp parse_int(value), do: String.to_integer(value)
+
+  defp system_env_impl, do: Application.get_env(:context, :system_env, SystemEnvImpl)
 end
