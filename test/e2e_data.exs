@@ -30,5 +30,14 @@
     IO.puts("Hello world")
     "result"
     """
+  },
+  %{
+    name: "Oh hi Mark Greeter",
+    script: """
+      defmodule Greeter do
+        def greet(name), do: "Oh hi \#{name}!"
+      end
+      Greeter.greet("Mark")
+    """
   }
 ]
