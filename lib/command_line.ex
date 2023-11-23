@@ -42,7 +42,7 @@ defmodule ElixirScript.CommandLine do
     {parsed, _remaining_args} =
       OptionParser.parse!(args,
         strict: [script: :string, debug: :boolean, help: :boolean],
-        aliases: [debug: :d, help: :h, script: :s]
+        aliases: [d: :debug, h: :help, s: :script]
       )
 
     debug? = Keyword.get(parsed, :debug, System.get_env("INPUT_DEBUG") == "true")
@@ -62,9 +62,9 @@ defmodule ElixirScript.CommandLine do
       script [OPTIONS]
 
     Options:
-      --script,-s       Specifies the script to run [INPUT_SCRIPT]
-      --debug, -d       Enables debug mode [INPUT_DEBUG]
-      --help, -h        Show this help message and exit
+      --script, -s       Specifies the script to run [INPUT_SCRIPT]
+      --debug,  -d       Enables debug mode [INPUT_DEBUG]
+      --help,   -h       Show this help message and exit
 
     Example:
       script --script "IO.puts('Hello, world!')"
