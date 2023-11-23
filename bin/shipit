@@ -2,5 +2,6 @@
 set -euo pipefail
 # This script is used to ship code, replacing `git push`
 
+mix test
 bin/audit
 git push
