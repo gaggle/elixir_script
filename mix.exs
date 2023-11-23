@@ -35,6 +35,6 @@ defmodule ElixirScript.MixProject do
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/fixtures"]
+  defp elixirc_paths(:test), do: ["test/fixtures"] ++ elixirc_paths(:prod)
   defp elixirc_paths(_), do: ["lib"]
 end
