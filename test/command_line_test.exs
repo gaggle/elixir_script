@@ -35,6 +35,12 @@ defmodule ElixirScript.CommandLineTest do
       assert CommandLine.parse_args!(args) == expected
     end
 
+    test "parses --gh-token argument correctly" do
+      args = ["--gh-token", "token"]
+      expected = %CommandLine.ParsedArgs{gh_token: "token"}
+      assert CommandLine.parse_args!(args) == expected
+    end
+
     test "parses --help argument correctly" do
       args = ["--help"]
       expected = %CommandLine.ParsedArgs{help?: true}
@@ -50,9 +56,10 @@ defmodule ElixirScript.CommandLineTest do
     test "falls back to environment variables when no arguments are given" do
       safe_put_env("INPUT_SCRIPT", @script)
       safe_put_env("INPUT_DEBUG", "true")
+      safe_put_env("GH_TOKEN", "token")
 
       args = []
-      expected = %CommandLine.ParsedArgs{debug?: true, script: @script}
+      expected = %CommandLine.ParsedArgs{debug?: true, gh_token: "token", script: @script}
 
       assert CommandLine.parse_args!(args) == expected
     end

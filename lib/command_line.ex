@@ -12,7 +12,7 @@ defmodule ElixirScript.CommandLine do
     @moduledoc """
     Struct for parsed args
     """
-    defstruct debug?: false, help?: false, script: nil
+    defstruct debug?: false, gh_token: nil, help?: false, script: nil
   end
 
   def main(args, opts \\ []) do
@@ -41,16 +41,18 @@ defmodule ElixirScript.CommandLine do
   def parse_args!(args) do
     {parsed, _remaining_args} =
       OptionParser.parse!(args,
-        strict: [script: :string, debug: :boolean, help: :boolean],
+        strict: [script: :string, gh_token: :string, debug: :boolean, help: :boolean],
         aliases: [d: :debug, h: :help, s: :script]
       )
 
     debug? = Keyword.get(parsed, :debug, System.get_env("INPUT_DEBUG") == "true")
-    script = Keyword.get(parsed, :script, System.get_env("INPUT_SCRIPT"))
+    gh_token = Keyword.get(parsed, :gh_token, System.get_env("GH_TOKEN"))
     help? = Keyword.get(parsed, :help, false)
+    script = Keyword.get(parsed, :script, System.get_env("INPUT_SCRIPT"))
 
     %ParsedArgs{
       debug?: debug?,
+      gh_token: gh_token,
       help?: help?,
       script: script
     }
@@ -63,6 +65,7 @@ defmodule ElixirScript.CommandLine do
 
     Options:
       --script, -s       Specifies the script to run [INPUT_SCRIPT]
+      --gh-token         The GitHub Token to use for the Tentacat client [GH_TOKEN]
       --debug,  -d       Enables debug mode [INPUT_DEBUG]
       --help,   -h       Show this help message and exit
 
