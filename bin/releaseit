@@ -1,0 +1,33 @@
+#!/bin/bash
+eval "$(pkgx --shellcode)"; env +yq
+set -euo pipefail
+
+INCREMENT=${1:-PATCH}
+
+increment_version() {
+  local version=$1
+  local part=$2
+  IFS='.' read -ra VERSION_PARTS <<< "$version"
+  case "$part" in
+    MAJOR)
+      VERSION_PARTS[0]=$((VERSION_PARTS[0]+1))
+      VERSION_PARTS[1]=0
+      VERSION_PARTS[2]=0
+      ;;
+    MINOR)
+      VERSION_PARTS[1]=$((VERSION_PARTS[1]+1))
+      VERSION_PARTS[2]=0
+      ;;
+    PATCH)
+      VERSION_PARTS[2]=$((VERSION_PARTS[2]+1))
+      ;;
+  esac
+  echo "${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}"
+}
+
+current_version=$(yq e '.env.VERSION' .pkgx.yaml)
+new_version=$(increment_version $current_version $INCREMENT)
+yq e -i ".env.VERSION = \"$new_version\"" .pkgx.yaml
+git add .pkgx.yaml
+git commit -m "Release v$new_version"
+echo "Release v$new_version committed."
