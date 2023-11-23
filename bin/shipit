@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+# This script is used to ship code, replacing `git push`
+
+bin/audit
+git push
