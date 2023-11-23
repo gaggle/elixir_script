@@ -7,7 +7,7 @@ defmodule ElixirScript.ScriptRunnerTest do
   alias Test.Fixtures.GitHubWorkflowRun
 
   setup do
-    stub(SystemEnvBehaviourMock, :get_env, fn varname, default ->
+    stub(SystemEnvMock, :get_env, fn varname, default ->
       GitHubWorkflowRun.env()[varname] || default
     end)
 

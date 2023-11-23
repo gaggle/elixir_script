@@ -62,5 +62,5 @@ defmodule ElixirScript.Context do
   defp parse_int(nil), do: nil
   defp parse_int(value), do: String.to_integer(value)
 
-  defp system_env_impl, do: Application.get_env(:context, :system_env, SystemEnvImpl)
+  defp system_env_impl, do: Application.get_env(:context, :system_env, System)
 end

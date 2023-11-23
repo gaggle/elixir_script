@@ -56,7 +56,7 @@ defmodule ElixirScript.E2eTest do
 
   describe "end-to-end tests" do
     test "run e2e tests" do
-      stub(SystemEnvBehaviourMock, :get_env, fn varname, default ->
+      stub(SystemEnvMock, :get_env, fn varname, default ->
         GitHubWorkflowRun.env()[varname] || default
       end)
 

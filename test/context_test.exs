@@ -9,7 +9,7 @@ defmodule ElixirScript.ContextTest do
 
   describe "from_github_environment/0" do
     test "returns a Context struct with default values when environment variables are not set" do
-      stub(SystemEnvBehaviourMock, :get_env, fn varname, default ->
+      stub(SystemEnvMock, :get_env, fn varname, default ->
         GitHubWorkflowRun.env()[varname] || default
       end)
 
