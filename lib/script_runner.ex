@@ -1,9 +1,16 @@
+defmodule ElixirScript.ScriptRunnerBehaviour do
+  @callback run(script :: String.t(), opts :: Keyword.t()) :: any()
+end
+
 defmodule ElixirScript.ScriptRunner do
   @moduledoc """
   Executes dynamic Elixir script content, allowing for the execution of arbitrary code snippets.
   """
+  @behaviour ElixirScript.ScriptRunnerBehaviour
+
   alias ElixirScript.Context
 
+  @impl ElixirScript.ScriptRunnerBehaviour
   def run(script, opts \\ []) do
     token = Keyword.get(opts, :github_token)
 
