@@ -1,7 +1,51 @@
 defmodule ElixirScript.CommandLineTest do
   use ExUnit.Case, async: false
+  import ExUnit.CaptureIO
+  import Mox
 
   alias ElixirScript.CommandLine
+
+  setup :verify_on_exit!
+
+  describe "main/1" do
+    test "passes script and github_token to script runner" do
+      expect(ElixirScript.ScriptRunnerMock, :run, fn "foo", [github_token: "token"] -> "bar" end)
+
+      capture_io(fn ->
+        CommandLine.main(["--script", "foo", "--gh-token", "token"])
+      end)
+    end
+
+    test "outputs the result of script runner to GitHub command" do
+      stub(ElixirScript.ScriptRunnerMock, :run, fn _, _ -> "bar" end)
+      safe_delete_env("GITHUB_OUTPUT")
+
+      io =
+        capture_io(fn ->
+          CommandLine.main(["--script", "foo", "--gh-token", "token"])
+        end)
+
+      assert io == "::set-output name=result::bar\n"
+    end
+
+    test "outputs result to GitHub environment commands if available" do
+      {:ok, file_path} = safe_temp_path()
+      safe_put_env("GITHUB_OUTPUT", file_path)
+
+      stub(ElixirScript.ScriptRunnerMock, :run, fn _, _ -> "bar" end)
+
+      capture_io(fn ->
+        CommandLine.main(["--script", "foo", "--gh-token", "token"])
+      end)
+
+      regex =
+        ~r/result<<ghadelimiter_#Ref<(?:\d|\.)+>\n(?<result>.*)\nghadelimiter_#Ref<(?:\d|\.)+>\n/
+
+      output = File.read!(file_path)
+      assert [_, result] = Regex.run(regex, output), "Regex failed on: " <> output
+      assert result == "bar"
+    end
+  end
 
   describe "parse_args!/1" do
     @script "IO.puts('Hello, world!')"
@@ -83,5 +127,18 @@ defmodule ElixirScript.CommandLineTest do
         do: System.put_env(varname, original_value),
         else: System.delete_env(varname)
     end)
+  end
+
+  def safe_delete_env(varname) do
+    original_value = System.get_env(varname)
+    System.delete_env(varname)
+
+    on_exit(fn -> if original_value, do: System.put_env(varname, original_value) end)
+  end
+
+  def safe_temp_path do
+    {:ok, file_path} = Temp.open("my-file", &IO.write(&1, ""))
+    on_exit(fn -> File.rm(file_path) end)
+    {:ok, file_path}
   end
 end

@@ -15,12 +15,12 @@ defmodule ElixirScript.CommandLine do
     defstruct debug?: false, gh_token: nil, help?: false, script: nil
   end
 
-  def main(args, opts \\ []) do
+  def main(args) do
     parsed_args = parse_args!(args)
     log_level = if parsed_args.debug?, do: :debug, else: :info
     Logger.configure(level: log_level)
 
-    runner = Keyword.get(opts, :runner, &ScriptRunner.run/1)
+    runner = script_runner()
     Logger.debug("Running in debug mode, using runner: #{inspect(runner)}")
 
     Logger.debug("Environment Variables: #{inf_inspect(System.get_env())}")
@@ -32,7 +32,7 @@ defmodule ElixirScript.CommandLine do
       System.halt(0)
     else
       Logger.debug("Script input: #{inf_inspect(parsed_args.script)}")
-      result = runner.(parsed_args.script)
+      result = runner.run(parsed_args.script, github_token: parsed_args.gh_token)
       Core.set_output(result, "result")
       Logger.debug("Result output: #{inspect(result, pretty: true)}")
     end
@@ -77,4 +77,7 @@ defmodule ElixirScript.CommandLine do
   def inf_inspect(exec) do
     inspect(exec, pretty: true, limit: :infinity, printable_limit: :infinity)
   end
+
+  defp script_runner,
+    do: Application.get_env(:command_line, :script_runner, ScriptRunner)
 end
