@@ -32,6 +32,7 @@ defmodule ElixirScript.MixProject do
       {:jason, "~> 1.4"},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0", only: :test},
+      {:temp, "~> 0.4", only: :test},
       {:tentacat, "~> 2.0"}
     ]
   end
