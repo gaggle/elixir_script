@@ -110,6 +110,8 @@ jobs:
           image-name: ${{ env.IMAGE_NAME }}
           script: ${{ matrix.script }}
           expected: ${{ matrix.expected }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
 
   push:
     needs: [ version, test, audit, build, e2e-tests, vulnerability-scanner ]
