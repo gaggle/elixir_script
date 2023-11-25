@@ -76,13 +76,27 @@ defmodule ElixirScript.E2eTest.EndToEndTest do
 
   setup :verify_on_exit!
 
+  setup do
+    bypass = Bypass.open()
+    {:ok, bypass: bypass}
+  end
+
   describe "end-to-end tests" do
-    test "run e2e tests" do
+    test "run e2e tests", %{bypass: bypass} do
+      ElixirScript.CustomLogger.configure(level: :debug)
+
       stub(SystemEnvMock, :get_env, fn varname, default ->
         GitHubWorkflowRun.env()[varname] || default
       end)
 
-      stub(TentacatMock.ClientMock, :new, fn -> %{auth: nil, endpoint: "github"} end)
+      Bypass.expect(bypass, "GET", "/users/gaggle", fn conn ->
+        fixture_path = Path.join(__DIR__, "fixtures/api.github.com/users/gaggle/GET.200.json")
+        Plug.Conn.resp(conn, 200, File.read!(fixture_path))
+      end)
+
+      stub(TentacatMock.ClientMock, :new, fn ->
+        Tentacat.Client.new("http://localhost:#{bypass.port}")
+      end)
 
       E2e.read_test_file()
       |> Enum.each(&EndToEndUtils.run_test/1)

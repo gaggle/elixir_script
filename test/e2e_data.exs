@@ -44,5 +44,13 @@
       Greeter.greet("Mark")
     """,
     expected: "Oh hi Mark!"
+  },
+  %{
+    name: "Can use the GitHub API via Tentacat",
+    script: """
+      {200, user, _resp} = Tentacat.Users.find(client, "gaggle")
+      user["login"]
+    """,
+    expected: "gaggle"
   }
 ]
