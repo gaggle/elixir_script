@@ -48,9 +48,23 @@
   %{
     name: "Can use the GitHub API via Tentacat",
     script: """
-      {200, user, _resp} = Tentacat.Users.find(client, "gaggle")
+      {200, user, _} = Tentacat.Users.find(client, "gaggle")
       user["login"]
     """,
     expected: "gaggle"
+  },
+  %{
+    name: "Can grab information via the GitHub API",
+    script: """
+      {200, stargazers, _} = Tentacat.Users.Starring.stargazers(client, "gaggle", "elixir_script")
+      IO.inspect(Enum.map_join(stargazers, ", ", & &1["login"]), label: "Stargazers")
+    """
+  },
+  %{
+    name: "Can interact with repositories via GitHub API",
+    script: """
+      {204, _, _} = Tentacat.Users.Starring.star(client, "gaggle", "elixir_script")
+      :ok
+    """
   }
 ]

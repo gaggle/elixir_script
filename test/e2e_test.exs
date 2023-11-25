@@ -94,6 +94,20 @@ defmodule ElixirScript.E2eTest.EndToEndTest do
         Plug.Conn.resp(conn, 200, File.read!(fixture_path))
       end)
 
+      Bypass.expect(bypass, "GET", "/repos/gaggle/elixir_script/stargazers", fn conn ->
+        fixture_path =
+          Path.join(
+            __DIR__,
+            "fixtures/api.github.com/repos/gaggle/elixir_script/stargazers/GET.200.json"
+          )
+
+        Plug.Conn.resp(conn, 200, File.read!(fixture_path))
+      end)
+
+      Bypass.expect(bypass, "PUT", "/user/starred/gaggle/elixir_script", fn conn ->
+        Plug.Conn.resp(conn, 204, "")
+      end)
+
       stub(TentacatMock.ClientMock, :new, fn ->
         Tentacat.Client.new("http://localhost:#{bypass.port}")
       end)
