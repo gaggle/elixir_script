@@ -1,4 +1,7 @@
 defmodule ElixirScript.ScriptRunnerBehaviour do
+  @moduledoc """
+  Abstract behaviour of ScriptRunner.
+  """
   @callback run(script :: String.t(), opts :: Keyword.t()) :: any()
 end
 
