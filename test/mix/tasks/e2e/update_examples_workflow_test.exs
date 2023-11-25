@@ -27,6 +27,7 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflowTest do
 
         on:
           push:
+            branches: [ 'main' ]
             paths:
               - .github/workflows/examples.yml
           release:
@@ -76,6 +77,7 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflowTest do
 
         on:
           push:
+            branches: [ 'main' ]
             paths:
               - .github/workflows/examples.yml
           release:
