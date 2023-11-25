@@ -102,13 +102,15 @@ defmodule ElixirScript.E2eTest.EndToEndUtils do
   alias ElixirScript.ScriptRunner
 
   def run_test(%Entry{name: name, file: nil, script: script, expected: expected}) do
-    actual =
-      run_script_and_capture_output(script)
-      |> convert_to_github_actions_output()
+    {output, io} = run_script_and_capture_output(script)
+    actual = convert_to_github_actions_output(output)
 
     unless is_nil(expected) do
       assert actual == expected,
-             "E2E test '#{name}' failed.\n  Expected: #{inspect(expected)}\n    Actual: #{inspect(actual)}"
+             "E2E test '#{name}' failed.\n" <>
+               "  EXPECTED:\n#{inspect(expected)}\n\n" <>
+               "  ACTUAL:\n#{inspect(actual)}\n\n" <>
+               "  LOGS:\n#{io}"
     end
   end
 
@@ -119,13 +121,14 @@ defmodule ElixirScript.E2eTest.EndToEndUtils do
   # the return value back to the parent process. This ensures that only the intended return
   # value is used for the test assertion, regardless of any other IO produced during script execution.
   defp run_script_and_capture_output(script) do
-    capture_io(fn ->
-      actual = ScriptRunner.run(script)
-      send(self(), {:actual, actual})
-    end)
+    io =
+      capture_io(fn ->
+        output = ScriptRunner.run(script)
+        send(self(), {:output, output})
+      end)
 
-    assert_received {:actual, actual}
-    actual
+    assert_received {:output, output}
+    {output, io}
   end
 
   # Converts the script output to match the GitHub Actions output format.
