@@ -4,8 +4,23 @@ defmodule ElixirScript.ScriptRunner do
   """
   alias ElixirScript.Context
 
-  def run(script) do
-    {value, _binding} = Code.eval_string(script, context: Context.from_github_environment())
+  def run(script, opts \\ []) do
+    token = Keyword.get(opts, :github_token)
+
+    client =
+      if token != nil,
+        do: tentacat_client().new(%{access_token: token}),
+        else: tentacat_client().new()
+
+    {value, _binding} =
+      Code.eval_string(
+        script,
+        context: Context.from_github_environment(),
+        client: client
+      )
+
     value
   end
+
+  defp tentacat_client, do: Application.get_env(:script_runner, :tentacat_client, Tentacat.Client)
 end

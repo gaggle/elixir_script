@@ -11,6 +11,8 @@ defmodule ElixirScript.ScriptRunnerTest do
       GitHubWorkflowRun.env()[varname] || default
     end)
 
+    stub(TentacatMock.ClientMock, :new, fn -> %{auth: nil, endpoint: "github"} end)
+
     :ok
   end
 
@@ -29,6 +31,29 @@ defmodule ElixirScript.ScriptRunnerTest do
 
     assert_raise RuntimeError, "error!", fn ->
       ScriptRunner.run(script)
+    end
+  end
+
+  describe "github access" do
+    test "executes with an un-authenticated Tentacat GitHub client by default" do
+      expect(TentacatMock.ClientMock, :new, fn -> %{auth: nil, endpoint: "github"} end)
+
+      assert ScriptRunner.run("true")
+    end
+
+    test "passes the Tentacat client into bindings" do
+      expect(TentacatMock.ClientMock, :new, fn -> %{auth: nil, endpoint: "github"} end)
+
+      assert ScriptRunner.run("client") == %{auth: nil, endpoint: "github"}
+    end
+
+    test "passes access token opts into the client, if available" do
+      expect(TentacatMock.ClientMock, :new, fn %{access_token: token} ->
+        %{auth: token, endpoint: "github"}
+      end)
+
+      opts = [github_token: "token"]
+      assert ScriptRunner.run("client", opts) == %{auth: "token", endpoint: "github"}
     end
   end
 end

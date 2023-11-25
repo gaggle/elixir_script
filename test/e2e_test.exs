@@ -60,6 +60,8 @@ defmodule ElixirScript.E2eTest do
         GitHubWorkflowRun.env()[varname] || default
       end)
 
+      stub(TentacatMock.ClientMock, :new, fn -> %{auth: nil, endpoint: "github"} end)
+
       E2e.read_test_file()
       |> Enum.each(&Runner.run_test/1)
     end
