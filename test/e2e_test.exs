@@ -7,7 +7,6 @@ defmodule ElixirScript.E2eTest do
   import Mox
 
   alias ElixirScript.E2e
-  alias ElixirScript.E2eTest.Runner
   alias Test.Fixtures.GitHubWorkflowRun
 
   setup :verify_on_exit!
@@ -54,19 +53,6 @@ defmodule ElixirScript.E2eTest do
     end
   end
 
-  describe "end-to-end tests" do
-    test "run e2e tests" do
-      stub(SystemEnvMock, :get_env, fn varname, default ->
-        GitHubWorkflowRun.env()[varname] || default
-      end)
-
-      stub(TentacatMock.ClientMock, :new, fn -> %{auth: nil, endpoint: "github"} end)
-
-      E2e.read_test_file()
-      |> Enum.each(&Runner.run_test/1)
-    end
-  end
-
   defp create_temp_file(content) do
     tmp_dir = System.tmp_dir()
     file_path = Path.join(tmp_dir, "temp.exs")
@@ -76,7 +62,35 @@ defmodule ElixirScript.E2eTest do
   end
 end
 
-defmodule ElixirScript.E2eTest.Runner do
+defmodule ElixirScript.E2eTest.EndToEndTest do
+  @moduledoc """
+  This module contains unit tests for the E2e module's functionality,
+  ensuring that the test file reading and parsing behaviors are working as expected.
+  """
+  use ExUnit.Case
+  import Mox
+
+  alias ElixirScript.E2e
+  alias ElixirScript.E2eTest.EndToEndUtils
+  alias Test.Fixtures.GitHubWorkflowRun
+
+  setup :verify_on_exit!
+
+  describe "end-to-end tests" do
+    test "run e2e tests" do
+      stub(SystemEnvMock, :get_env, fn varname, default ->
+        GitHubWorkflowRun.env()[varname] || default
+      end)
+
+      stub(TentacatMock.ClientMock, :new, fn -> %{auth: nil, endpoint: "github"} end)
+
+      E2e.read_test_file()
+      |> Enum.each(&EndToEndUtils.run_test/1)
+    end
+  end
+end
+
+defmodule ElixirScript.E2eTest.EndToEndUtils do
   @moduledoc """
   This submodule focuses on running end-to-end tests and validating their output against expected results.
   """
