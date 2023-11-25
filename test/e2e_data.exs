@@ -49,7 +49,7 @@
     name: "Can use the GitHub API via Tentacat",
     script: """
       {200, user, _} = Tentacat.Users.find(client, "gaggle")
-      user["login"]
+      get_in(user, ["login"])
     """,
     expected: "gaggle"
   },

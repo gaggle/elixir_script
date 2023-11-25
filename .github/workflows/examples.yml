@@ -107,7 +107,7 @@ jobs:
         with:
           script: |
             {200, user, _} = Tentacat.Users.find(client, "gaggle")
-            user["login"]
+            get_in(user, ["login"])
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
