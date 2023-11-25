@@ -9,6 +9,7 @@ defmodule ElixirScript.ScriptRunner do
   @behaviour ElixirScript.ScriptRunnerBehaviour
 
   alias ElixirScript.Context
+  alias ElixirScript.CustomLogger, as: Logger
 
   @impl ElixirScript.ScriptRunnerBehaviour
   def run(script, opts \\ []) do
@@ -18,6 +19,8 @@ defmodule ElixirScript.ScriptRunner do
       if token != nil,
         do: tentacat_client().new(%{access_token: token}),
         else: tentacat_client().new()
+
+    Logger.debug("Created GitHub client: #{inspect(client)}")
 
     {value, _binding} =
       Code.eval_string(
