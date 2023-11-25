@@ -35,6 +35,9 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflowTest do
               - "created"
           workflow_dispatch:
 
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+
         jobs:
           io-visible-in-logs-and-return-value-available-via-outputs:
             runs-on: ubuntu-latest
@@ -84,6 +87,9 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflowTest do
             types:
               - "created"
           workflow_dispatch:
+
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
 
         jobs:
           io-visible-in-logs-and-return-value-available-via-outputs:

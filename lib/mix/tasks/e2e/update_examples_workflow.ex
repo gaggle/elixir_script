@@ -77,6 +77,9 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
           - "created"
       workflow_dispatch:
 
+    env:
+      GH_TOKEN: ${{ secrets.PAT }}
+
     jobs:
     """ <> jobs
   end

@@ -15,6 +15,9 @@ on:
       - "created"
   workflow_dispatch:
 
+env:
+  GH_TOKEN: ${{ secrets.PAT }}
+
 jobs:
   scripts-are-run-and-what-it-returns-is-available-via-outputs:
     runs-on: ubuntu-latest
