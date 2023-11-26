@@ -6,7 +6,7 @@ INCREMENT=${1:-PATCH}
 
 increment_version() {
   local version=$1
-  local part=$2
+  local part=$(echo "$2" | tr '[:lower:]' '[:upper:]')
   IFS='.' read -ra VERSION_PARTS <<< "$version"
   case "$part" in
     MAJOR)
@@ -21,12 +21,16 @@ increment_version() {
     PATCH)
       VERSION_PARTS[2]=$((VERSION_PARTS[2]+1))
       ;;
+    *)
+      echo "Error: Invalid version increment part '$2'. Use MAJOR, MINOR, or PATCH." >&2
+      exit 1
+      ;;
   esac
   echo "${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}"
 }
 
 current_version=$(yq e '.env.VERSION' .pkgx.yaml)
-new_version=$(increment_version $current_version $INCREMENT)
+new_version=$(increment_version "$current_version" "$INCREMENT")
 yq e -i ".env.VERSION = \"$new_version\"" .pkgx.yaml
 git add .pkgx.yaml
 git commit -m "Release v$new_version"
