@@ -21,9 +21,18 @@ The following arguments are available in the script's bindings:
   script: |
     "🚀 Pushed to #{context.payload.repository.name} by @#{context.actor}! 
   ```
+* `client`: A pre-authenticated [Tentacat][tentacat] GitHub client.
+  It can be used like this:
+  ```yaml
+  script: |
+    {200, user, _} = Tentacat.Users.find(client, "gaggle")
+    IO.puts("🤔" <> user["name"]) 
+  ```
+  You can go to the [Tentacat project page][tentacat]
+  or read [the project's Hexdocs documentation][tentacat-docs]
+  for how to use all its features.
 
-_These bindings are already defined,
-so you don't have to import them._
+_These bindings are already defined, so you don't have to import them._
 
 ### Outputs
 
@@ -52,6 +61,11 @@ Elixir Script adapts its interfaces and functionality to the Elixir environment,
 aiming to provide a seamless experience for Elixir developers.
 Many thanks to the creators and contributors of GitHub Script!
 
+### Tentacat
+
+The GitHub library is by [Eduardo Gurgel][eduardo],
+huge thanks to Eduardo and contributors for making such a useful project available.
+
 ## Releasing
 
 [New releases](https://github.com/gaggle/elixir_script/releases) are automatically created
@@ -61,6 +75,10 @@ The release must then be edited and then immediately resaved to publish it to th
 (This is a built-in limitation of GitHub releases
 that prevents Marketplace releases from being automated)
 
+[eduardo]: https://github.com/edgurgel
+
 [github-script]: https://github.com/marketplace/actions/github-script
 
 [tentacat]: https://github.com/edgurgel/tentacat
+
+[tentacat-docs]: https://hexdocs.pm/tentacat
