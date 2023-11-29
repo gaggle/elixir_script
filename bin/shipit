@@ -4,4 +4,10 @@ set -euo pipefail
 
 mix test
 bin/audit
+
+if [[ -n $(git status --porcelain) ]]; then
+  echo "There are changed files in the Git repository"
+  exit 1
+fi
+
 git push
