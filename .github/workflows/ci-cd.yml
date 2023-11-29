@@ -29,6 +29,8 @@ jobs:
         uses: ./.github/actions/version
         with:
           semver: ${{ env.VERSION }}
+      - name: Show outputs
+        run: echo -e "Outputs:\n${{ toJSON(steps.parse.outputs) }}"
 
   test:
     runs-on: ubuntu-latest
