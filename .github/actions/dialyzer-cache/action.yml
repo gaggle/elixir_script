@@ -24,7 +24,7 @@ runs:
       shell: bash
     - name: Restore PLT cache
       id: restore-cache
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         key: |
           plt-${{ runner.os }}-${{ inputs.otp-version }}-${{ inputs.elixir-version }}-${{ steps.mix-lock-hash.outputs.hash || inputs.mix-lock-hash }}
@@ -38,7 +38,7 @@ runs:
       shell: bash
     - name: Save PLT cache
       if: steps.restore-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         key: |
           plt-${{ runner.os }}-${{ inputs.otp-version }}-${{ inputs.elixir-version }}-${{ steps.mix-lock-hash.outputs.hash || inputs.mix-lock-hash }}

@@ -3,8 +3,10 @@ description: "Download image from build-tar-image action and make it available f
 inputs:
   download-name:
     default: ${{ github.event.repository.name }}
+    description: "Name of the image to download. Defaults to the name of the repository"
   download-tag:
     default: ${{ github.run_id }}
+    description: "Tag of the image to download. Defaults to the current run ID"
 outputs:
   image-name:
     description: "The container image that got downloaded and made available. Effectively <download-name>:<download-tag>. Also available via `env.IMAGE_NAME`"
@@ -13,7 +15,7 @@ runs:
   using: "composite"
   steps:
     - name: Download artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v6
       with:
         name: ${{ inputs.download-name }}
         path: /tmp

@@ -98,8 +98,10 @@ inputs:
     required: false
   upload-name:
     default: ${{ github.event.repository.name }}
+    description: "Name of the image to upload. Defaults to the name of the repository"
   upload-tag:
     default: ${{ github.run_id }}
+    description: "Tag of the image to upload. Defaults to the current run ID"
 outputs:
   image-name:
     description: "The container image that got downloaded and made available. Effectively <download-name>:<download-tag>. Also available via `env.IMAGE_NAME`"
@@ -112,14 +114,14 @@ runs:
       id: meta
       with:
         images: ${{ inputs.upload-name }}:${{ inputs.upload-tag }}
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx
         restore-keys: |
           ${{ runner.os }}-buildx-
     - name: Build image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         add-hosts: ${{ inputs.build-add-hosts }}
         allow: ${{ inputs.build-allow }}
@@ -152,7 +154,7 @@ runs:
         target: ${{ inputs.build-target }}
         ulimit: ${{ inputs.build-ulimit }}
         github-token: ${{ inputs.build-github-token }}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v5
       with:
         name: ${{ inputs.upload-name }}
         path: /tmp/${{ inputs.upload-name }}.tar
