@@ -4,7 +4,24 @@ set -euo pipefail
 # It checks for formatting issues, static code analysis, and code style consistency.
 #
 # Usage:
-#   ./bin/audit    # Run to audit your project.
+#   ./bin/audit                    # Run to audit your project.
+#   ./bin/audit --skip-check-image # Skip Docker image check (used by CI)
+
+SKIP_CHECK_IMAGE=false
+
+# Parse arguments
+for arg in "$@"; do
+  case $arg in
+    --skip-check-image)
+      SKIP_CHECK_IMAGE=true
+      shift
+      ;;
+    *)
+      echo "Unknown option: $arg"
+      exit 1
+      ;;
+  esac
+done
 
 echo "Checking code formatting..."
 bin/format --check
@@ -21,3 +38,10 @@ mix credo --strict
 
 echo "Checking examples workflow is up-to-date..."
 mix e2e.update_examples_workflow --check
+
+if [ "$SKIP_CHECK_IMAGE" = false ]; then
+  echo "Checking Docker image..."
+  bin/check-image
+else
+  echo "Skipping Docker image check..."
+fi
