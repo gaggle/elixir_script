@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="tentacat" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/tentacat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/tentacat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/tentacat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/tentacat/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/tentacat/lib" />
+      <root url="file://$PROJECT_DIR$/deps/tentacat/lib" />
+    </SOURCES>
+  </library>
+</component>
