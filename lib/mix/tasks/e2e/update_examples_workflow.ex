@@ -139,7 +139,7 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
     lines
     |> Enum.map_join("\n", fn line ->
       slice_length = Enum.min([String.length(line), smallest_indent])
-      String.slice(line, slice_length..-1)
+      String.slice(line, slice_length..-1//1)
     end)
   end
 end
