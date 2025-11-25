@@ -1,10 +1,8 @@
 #!/usr/bin/env -S pkgx +yq bash>=4
 
-source <(pkgx dev --shellcode)
 set -euo pipefail
 
-# Show usage if no argument provided
-if [ $# -eq 0 ]; then
+show_usage() {
   echo "Usage: releaseit <patch|minor|major>"
   echo ""
   echo "Create a new release by incrementing the version in .pkgx.yaml"
@@ -13,10 +11,12 @@ if [ $# -eq 0 ]; then
   echo "  patch  - Increment patch version (x.y.Z)"
   echo "  minor  - Increment minor version (x.Y.0)"
   echo "  major  - Increment major version (X.0.0)"
-  exit 1
-fi
+}
 
-INCREMENT=$1
+get_last_release() {
+  # Get the most recent version tag
+  git tag -l 'v*' --sort=-version:refname | head -1
+}
 
 increment_version() {
   local version=$1
@@ -43,18 +43,59 @@ increment_version() {
   echo "${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}"
 }
 
-current_version=$(yq e '.env.VERSION' .pkgx.yaml)
+# Check if version exists in .pkgx.yaml
+current_version=$(yq e '.env.VERSION' .pkgx.yaml 2>/dev/null)
+if [ -z "$current_version" ] || [ "$current_version" = "null" ]; then
+  echo "ERROR: No env.VERSION found in .pkgx.yaml"
+  exit 1
+fi
+
+# Fetch latest tags to ensure we have accurate release history
+git fetch --tags --quiet 2>/dev/null
+
+# Verify version consistency
+last_release=$(get_last_release)
+if [ -n "$last_release" ]; then
+  # Strip 'v' prefix for comparison
+  last_version="${last_release#v}"
+  if [ "$current_version" != "$last_version" ] && ! git rev-parse "v$current_version" >/dev/null 2>&1; then
+    echo "ERROR: Version mismatch!"
+    echo "  .pkgx.yaml version: v$current_version"
+    echo "  Last git tag:       $last_release"
+    exit 1
+  fi
+fi
+
+# Handle --help flag
+if [ $# -eq 1 ] && [ "$1" = "--help" ]; then
+  show_usage
+  exit 0
+fi
+
+# Show commits if no argument provided
+if [ $# -eq 0 ]; then
+  echo "Usage: releaseit <patch|minor|major>"
+  echo ""
+
+  if git rev-parse "v$current_version" >/dev/null 2>&1; then
+    echo "Commits since v$current_version:"
+    git log --oneline --pretty=format:"- %s" "v$current_version..HEAD"
+  else
+    echo "No previous releases, first release?"
+    git log --oneline --pretty=format:"- %s" HEAD
+  fi
+  echo ""
+  exit 0
+fi
+
+INCREMENT=$1
+
 new_version=$(increment_version "$current_version" "$INCREMENT")
 
-# Show commits since last release
-echo "==> Commits since v$current_version:"
+# Show version transition and ask for confirmation
+echo "Creating release: v$current_version -> v$new_version"
 echo ""
-git log --oneline "v$current_version..HEAD" 2>/dev/null || git log --oneline HEAD | head -10
-echo ""
-
-# Ask for confirmation
-echo "Release v$current_version -> v$new_version"
-read -p "Continue with release? [y/N] " -n 1 -r
+read -p "Continue? [y/N] " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
   echo "Release cancelled."
@@ -64,4 +105,5 @@ fi
 yq e -i ".env.VERSION = \"$new_version\"" .pkgx.yaml
 git add .pkgx.yaml
 git commit -m "Release v$new_version"
-echo "Release v$new_version committed."
+echo ""
+echo "✓ Released v$new_version, remember to push the changes"
