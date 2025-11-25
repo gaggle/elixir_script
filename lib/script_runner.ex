@@ -25,14 +25,26 @@ defmodule ElixirScript.ScriptRunner do
 
     Logger.debug("Created GitHub client: #{inspect(client)}")
 
+    bindings = [
+      context: Context.from_github_environment(),
+      client: client
+    ]
+
     {value, _binding} =
-      Code.eval_string(
-        script,
-        context: Context.from_github_environment(),
-        client: client
-      )
+      if is_file_path?(script) do
+        path = Path.expand(script)
+        content = File.read!(path)
+        Code.eval_string(content, bindings, file: path, line: 1)
+      else
+        Code.eval_string(script, bindings)
+      end
 
     value
+  end
+
+  # Determines if the given string is a file path
+  defp is_file_path?(script) when is_binary(script) do
+    String.starts_with?(script, ["./", "../", "/"])
   end
 
   defp tentacat_client, do: Application.get_env(:script_runner, :tentacat_client, Tentacat.Client)
