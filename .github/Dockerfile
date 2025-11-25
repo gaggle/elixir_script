@@ -1,36 +1,42 @@
-FROM pkgxdev/pkgx as base
+FROM pkgxdev/pkgx AS base
 # Set locale to utf8, without this Elixir warns:
 # > the VM is running with native name encoding of latin1 which may cause Elixir to malfunction as it expects utf8.
 # > Please ensure your locale is set to UTF-8 (which can be verified by running "locale" in your shell)
 # > or set the ELIXIR_ERL_OPTIONS="+fnu" environment variable
-RUN apt-get -y install locales
+RUN apt-get update && apt-get -y install locales ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
-FROM base as build
+# Create pkgx_env helper script that executes commands with dependencies from .pkgx.yaml
+COPY --chmod=755 <<'EOF' /usr/local/bin/pkgx_env
+#!/bin/sh
+set -eu
+PKGX_DEPS=$(pkgx yq eval '.dependencies | to_entries | map("+" + .key + "@" + (.value | sub("^="; ""))) | join(" ")' .pkgx.yaml)
+exec pkgx $PKGX_DEPS "$@"
+EOF
+
+FROM base AS build
 WORKDIR /action/workspace
 
 # System dependencies
-COPY ../.pkgx.yaml .
-RUN eval "$(pkgx --internal.activate $PWD)"
+COPY .pkgx.yaml .
 
 # Mix dependencies
-COPY ../mix.exs .
-RUN eval "$(pkgx --internal.activate $PWD)" && mix deps.get
+COPY mix.exs mix.lock ./
+RUN pkgx_env mix deps.get && pkgx_env mix deps.compile
 
 # Compile
-COPY ../lib lib
-RUN eval "$(pkgx --internal.activate $PWD)" && mix deps.compile
-RUN eval "$(pkgx --internal.activate $PWD)" && mix escript.build
+COPY lib lib
+RUN pkgx_env mix compile
+RUN pkgx_env mix escript.build
 
-FROM base as release
+FROM base AS release
+WORKDIR /usr/local/bin
+
 COPY --from=build /root/.pkgx /root/.pkgx
-COPY --from=build /action/workspace/.pkgx.yaml /usr/local/bin
-COPY --from=build /action/workspace/elixir_script /usr/local/bin
-RUN echo -e '#!/bin/sh\n\
-eval "$(pkgx --internal.activate /usr/local/bin)"\n\
-exec /usr/local/bin/elixir_script "$@"' > /usr/local/bin/elixir_script_wrapper && \
-chmod +x /usr/local/bin/elixir_script_wrapper
-ENTRYPOINT ["elixir_script_wrapper"]
+COPY --from=build /action/workspace/.pkgx.yaml /usr/local/bin/.pkgx.yaml
+COPY --from=build /action/workspace/elixir_script /usr/local/bin/elixir_script
+
+ENTRYPOINT ["pkgx_env", "/usr/local/bin/elixir_script"]

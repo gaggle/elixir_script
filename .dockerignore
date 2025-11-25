@@ -3,3 +3,4 @@
 !lib/**/*
 lib/mix/**/*
 !mix.exs
+!mix.lock
