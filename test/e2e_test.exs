@@ -39,7 +39,7 @@ defmodule ElixirScript.E2eTest do
     test "fails if neither script nor file is specified" do
       file_path = create_temp_file([%{name: "Test name"}])
 
-      assert_raise KeyError, "key :script or :file not found in: %{name: \"Test name\"}", fn ->
+      assert_raise KeyError, ~r/key :script or :file not found/, fn ->
         E2e.read_test_file(file_path)
       end
     end
@@ -47,7 +47,7 @@ defmodule ElixirScript.E2eTest do
     test "fails if name is not specified" do
       file_path = create_temp_file([%{script: ""}])
 
-      assert_raise KeyError, "key :name not found in: %{script: \"\"}", fn ->
+      assert_raise KeyError, ~r/key :name not found/, fn ->
         E2e.read_test_file(file_path)
       end
     end
