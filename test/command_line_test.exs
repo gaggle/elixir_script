@@ -45,6 +45,30 @@ defmodule ElixirScript.CommandLineTest do
       assert [_, result] = Regex.run(regex, output), "Regex failed on: " <> output
       assert result == "bar"
     end
+
+    test "handles file paths in script argument" do
+      file_path = Path.join(System.tmp_dir(), "cli_test.exs")
+      File.write!(file_path, "\"CLI file result\"")
+      on_exit(fn -> File.rm!(file_path) end)
+
+      expect(ElixirScript.ScriptRunnerMock, :run, fn ^file_path, [github_token: nil] ->
+        "CLI file result"
+      end)
+
+      capture_io(fn ->
+        CommandLine.main(["--script", file_path])
+      end)
+    end
+
+    test "passes relative file paths unchanged to script runner" do
+      expect(ElixirScript.ScriptRunnerMock, :run, fn "./scripts/test.exs", _ ->
+        "test output"
+      end)
+
+      capture_io(fn ->
+        CommandLine.main(["--script", "./scripts/test.exs"])
+      end)
+    end
   end
 
   describe "parse_args!/1" do
