@@ -1,0 +1,30 @@
+#!/usr/bin/env -S pkgx +podman bash>=4
+source <(pkgx dev --shellcode)
+set -euo pipefail
+
+IMAGE_TAG="elixir_script:audit"
+
+echo "Building Docker image..."
+podman build -f .github/Dockerfile -t "$IMAGE_TAG" .
+
+echo "Testing Docker image..."
+# Test --help works
+OUTPUT=$(podman run --rm "$IMAGE_TAG" --help)
+if echo "$OUTPUT" | grep -q "Usage:"; then
+    echo "✓ Docker image builds and runs successfully"
+else
+    echo >&2 "✗ Docker image test failed"
+    echo >&2 "$OUTPUT"
+    exit 1
+fi
+
+## Optional: test with a simple script
+#echo "Running smoke test..."
+#OUTPUT=$(podman run --rm -e INPUT_SCRIPT='IO.puts("Docker smoke test OK")' "$IMAGE_TAG" 2>&1)
+#if echo "$OUTPUT" | grep -q "Docker smoke test OK"; then
+#    echo "✓ Smoke test passed"
+#else
+#    echo >&2 "✗ Smoke test failed"
+#    echo >&2 "$OUTPUT"
+#    exit 1
+#fi
