@@ -1,5 +1,6 @@
-#!/bin/bash
-eval "$(pkgx --shellcode)"; env +yq
+#!/usr/bin/env -S pkgx +yq bash>=4
+
+source <(pkgx dev --shellcode)
 set -euo pipefail
 
 INCREMENT=${1:-PATCH}

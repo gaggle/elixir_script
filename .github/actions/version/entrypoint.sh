@@ -1,5 +1,4 @@
-#!/bin/bash
-eval "$(pkgx --shellcode)"; env +yq
+#!/usr/bin/env -S pkgx +yq bash>=4
 set -euo pipefail
 
 debug_log() {

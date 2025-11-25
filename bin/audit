@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S pkgx bash>=4
 set -euo pipefail
 # This script is used to perform an audit of the Elixir project.
 # It checks for formatting issues, static code analysis, and code style consistency.

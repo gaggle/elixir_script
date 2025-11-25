@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env -S pkgx bash>=4
 set -euo pipefail
 # This script is used to ship code, replacing `git push`
 
