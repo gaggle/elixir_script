@@ -3,7 +3,20 @@
 source <(pkgx dev --shellcode)
 set -euo pipefail
 
-INCREMENT=${1:-PATCH}
+# Show usage if no argument provided
+if [ $# -eq 0 ]; then
+  echo "Usage: releaseit <patch|minor|major>"
+  echo ""
+  echo "Create a new release by incrementing the version in .pkgx.yaml"
+  echo ""
+  echo "Arguments:"
+  echo "  patch  - Increment patch version (x.y.Z)"
+  echo "  minor  - Increment minor version (x.Y.0)"
+  echo "  major  - Increment major version (X.0.0)"
+  exit 1
+fi
+
+INCREMENT=$1
 
 increment_version() {
   local version=$1
@@ -32,6 +45,22 @@ increment_version() {
 
 current_version=$(yq e '.env.VERSION' .pkgx.yaml)
 new_version=$(increment_version "$current_version" "$INCREMENT")
+
+# Show commits since last release
+echo "==> Commits since v$current_version:"
+echo ""
+git log --oneline "v$current_version..HEAD" 2>/dev/null || git log --oneline HEAD | head -10
+echo ""
+
+# Ask for confirmation
+echo "Release v$current_version -> v$new_version"
+read -p "Continue with release? [y/N] " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Release cancelled."
+  exit 0
+fi
+
 yq e -i ".env.VERSION = \"$new_version\"" .pkgx.yaml
 git add .pkgx.yaml
 git commit -m "Release v$new_version"
