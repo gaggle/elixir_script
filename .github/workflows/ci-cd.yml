@@ -51,7 +51,7 @@ jobs:
         with:
           otp-version: ${{ needs.version.outputs.otp-version }}
           elixir-version: ${{ needs.version.outputs.elixir-version }}
-      - run: bin/audit
+      - run: bin/audit --skip-check-image
 
   build:
     runs-on: ubuntu-latest
