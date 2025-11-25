@@ -11,6 +11,29 @@ To use this action, provide an input named `script` that contains Elixir code:
       IO.puts("Magic, just like the potions in Elixir ✨")
 ```
 
+### Using Script Files
+
+You can also provide a path to an Elixir script file instead of inline code:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: gaggle/elixir_script@v0
+  with:
+    script: ./.github/scripts/my_script.exs
+```
+
+The action automatically detects if the `script` input is a file path and will read and execute that file:
+
+```elixir
+# .github/scripts/my_script.exs
+{200, issues, _} = Tentacat.Issues.list(client, "gaggle", "elixir_script")
+
+issues
+|> Enum.filter(& &1["state"] == "open")
+|> Enum.map(& "- ##{&1["number"]}: #{&1["title"]}")
+|> Enum.join("\n")
+```
+
 ### Bindings
 
 The following arguments are available in the script's bindings:
