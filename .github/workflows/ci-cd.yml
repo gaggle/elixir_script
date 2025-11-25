@@ -23,7 +23,7 @@ jobs:
       tag-exists: ${{ steps.parse.outputs.tag-exists }}
     steps:
       - uses: actions/checkout@v6
-      - uses: pkgxdev/dev@v1
+      - uses: pkgxdev/dev@fix-erlang
       - name: Parse version
         id: parse
         uses: ./.github/actions/version
@@ -36,17 +36,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: pkgxdev/dev@v1
-      - run: mix deps.get
-      - run: mix test
+      - uses: pkgxdev/dev@fix-erlang
+      - name: Resolve ERL_BASE
+        run: |
+          unset ERL_ROOTDIR
+          ERL_BIN="$(command -v erl)"
+          ERL_BIN_REAL="$(readlink -f "$ERL_BIN")"
+          ERL_DIR="$(dirname "$(dirname "$ERL_BIN_REAL")")"
+          if [ -d "$ERL_DIR/lib/erlang" ]; then
+            ERL_BASE="$ERL_DIR/lib/erlang"
+          else
+            ERL_BASE="$ERL_DIR"
+          fi
+          echo "ERL_BASE=$ERL_BASE" >> "$GITHUB_ENV"
+          echo "ERL_ROOTDIR=$ERL_BASE" >> "$GITHUB_ENV"
+      - run: pkgx +invisible-island.net/ncurses -- mix deps.get
+      - run: pkgx +invisible-island.net/ncurses -- mix deps.compile
+      - run: pkgx +invisible-island.net/ncurses -- mix test
 
   audit:
     needs: [ version ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: pkgxdev/dev@v1
-      - run: mix deps.get
+      - uses: pkgxdev/dev@fix-erlang
+      - name: Resolve ERL_BASE
+        run: |
+          unset ERL_ROOTDIR
+          ERL_BIN="$(command -v erl)"
+          ERL_BIN_REAL="$(readlink -f "$ERL_BIN")"
+          ERL_DIR="$(dirname "$(dirname "$ERL_BIN_REAL")")"
+          if [ -d "$ERL_DIR/lib/erlang" ]; then
+            ERL_BASE="$ERL_DIR/lib/erlang"
+          else
+            ERL_BASE="$ERL_DIR"
+          fi
+          echo "ERL_BASE=$ERL_BASE" >> "$GITHUB_ENV"
+          echo "ERL_ROOTDIR=$ERL_BASE" >> "$GITHUB_ENV"
+      - run: pkgx +invisible-island.net/ncurses -- mix deps.get
+      - run: pkgx +invisible-island.net/ncurses -- mix deps.compile
       - uses: ./.github/actions/dialyzer-cache
         with:
           otp-version: ${{ needs.version.outputs.otp-version }}
@@ -90,11 +118,25 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v6
-      - uses: pkgxdev/dev@v1
-      - run: mix deps.get
+      - uses: pkgxdev/dev@fix-erlang
+      - name: Resolve ERL_BASE
+        run: |
+          unset ERL_ROOTDIR
+          ERL_BIN="$(command -v erl)"
+          ERL_BIN_REAL="$(readlink -f "$ERL_BIN")"
+          ERL_DIR="$(dirname "$(dirname "$ERL_BIN_REAL")")"
+          if [ -d "$ERL_DIR/lib/erlang" ]; then
+            ERL_BASE="$ERL_DIR/lib/erlang"
+          else
+            ERL_BASE="$ERL_DIR"
+          fi
+          echo "ERL_BASE=$ERL_BASE" >> "$GITHUB_ENV"
+          echo "ERL_ROOTDIR=$ERL_BASE" >> "$GITHUB_ENV"
+      - run: pkgx +invisible-island.net/ncurses -- mix deps.get
+      - run: pkgx +invisible-island.net/ncurses -- mix deps.compile
       - id: set-matrix
         name: Discover E2E tests
-        run: mix e2e.set_github_matrix matrix
+        run: pkgx +invisible-island.net/ncurses -- mix e2e.set_github_matrix matrix
 
   e2e-tests:
     needs: [ build, e2e-tests-discovery ]
