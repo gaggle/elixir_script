@@ -1,5 +1,5 @@
 dependencies:
-  elixir-lang.org: =1.15.6
-  erlang.org: =26.1.1
+  elixir-lang.org: =1.19.3
+  erlang.org: =28.2
 env:
   VERSION: 0.3.1
