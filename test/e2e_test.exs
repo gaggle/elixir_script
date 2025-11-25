@@ -20,8 +20,8 @@ defmodule ElixirScript.E2eTest do
 
     test "can read a simple example script" do
       file_path = create_temp_file([%{name: "Test name", script: "IO.puts(\"Hello, world!\")"}])
-      result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:file, :script])
-      assert result == %{file: nil, script: "IO.puts(\"Hello, world!\")"}
+      result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:script])
+      assert result == %{script: "IO.puts(\"Hello, world!\")"}
     end
 
     test "can read an expected value" do
@@ -30,16 +30,24 @@ defmodule ElixirScript.E2eTest do
       assert result == %{expected: "foo"}
     end
 
-    test "can read a file example" do
-      file_path = create_temp_file([%{name: "Test name", file: "./foo.ex"}])
-      result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:file, :script])
-      assert result == %{file: "./foo.ex", script: nil}
+    test "can read a file path with content" do
+      file_path =
+        create_temp_file([
+          %{
+            name: "Test name",
+            script: "./foo.exs",
+            file_content: %{"./foo.exs" => "IO.puts(\"test\")"}
+          }
+        ])
+
+      result = E2e.read_test_file(file_path) |> List.first() |> Map.take([:script, :file_content])
+      assert result == %{script: "./foo.exs", file_content: %{"./foo.exs" => "IO.puts(\"test\")"}}
     end
 
-    test "fails if neither script nor file is specified" do
+    test "fails if script is not specified" do
       file_path = create_temp_file([%{name: "Test name"}])
 
-      assert_raise KeyError, ~r/key :script or :file not found/, fn ->
+      assert_raise KeyError, ~r/key :script not found/, fn ->
         E2e.read_test_file(file_path)
       end
     end
@@ -129,8 +137,13 @@ defmodule ElixirScript.E2eTest.EndToEndUtils do
   alias ElixirScript.E2e.Entry
   alias ElixirScript.ScriptRunner
 
-  def run_test(%Entry{name: name, file: nil, script: script, expected: expected}) do
-    {output, io} = run_script_and_capture_output(script)
+  def run_test(%Entry{
+        name: name,
+        script: script,
+        file_content: file_content,
+        expected: expected
+      }) do
+    {output, io} = run_in_temp_context(script, file_content)
     actual = convert_to_github_actions_output(output)
 
     unless is_nil(expected) do
@@ -139,6 +152,41 @@ defmodule ElixirScript.E2eTest.EndToEndUtils do
                "  EXPECTED:\n#{inspect(expected)}\n\n" <>
                "  ACTUAL:\n#{inspect(actual)}\n\n" <>
                "  LOGS:\n#{io}"
+    end
+  end
+
+  defp run_in_temp_context(script, file_content) do
+    if file_content do
+      # Create a temp directory and work within it
+      temp_dir = Temp.mkdir!()
+
+      # Change to temp dir and create files there
+      original_cwd = File.cwd!()
+      File.cd!(temp_dir)
+
+      try do
+        # Create all the files with their relative paths
+        Enum.each(file_content, fn {path, content} ->
+          # Ensure the directory exists
+          dir = Path.dirname(path)
+
+          if dir != "." do
+            File.mkdir_p!(dir)
+          end
+
+          File.write!(path, content)
+        end)
+
+        # Run the script
+        run_script_and_capture_output(script)
+      after
+        # Always return to original directory and clean up
+        File.cd!(original_cwd)
+        File.rm_rf!(temp_dir)
+      end
+    else
+      # No files to create, just run the script
+      run_script_and_capture_output(script)
     end
   end
 

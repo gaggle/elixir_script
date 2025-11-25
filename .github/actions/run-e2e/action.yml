@@ -16,12 +16,29 @@ runs:
       run: |
         sed -i 's/\(  image: \).*/\1${{ inputs.image-name }}/' action.yml
       shell: bash
+    - name: Create script files
+      if: ${{ matrix.file_content }}
+      shell: bash
+      run: |
+        echo "Creating files for test: ${{ matrix.name }}"
+        # Use jq to iterate over the JSON object
+        echo '${{ toJSON(matrix.file_content) }}' | jq -r 'to_entries[] | @json' | while IFS= read -r entry; do
+          path=$(echo "$entry" | jq -r '.key')
+          content=$(echo "$entry" | jq -r '.value')
+          
+          # Create directory if needed
+          dir=$(dirname "$path")
+          mkdir -p "$dir"
+          
+          # Write the file content
+          echo "$content" > "$path"
+          echo "Created file: $path"
+        done
     - name: Run gaggle/elixir_script
       id: run
       uses: ./
       with:
-        script: |
-          ${{ matrix.script }}
+        script: ${{ matrix.script }}
     - name: Assert output
       if: ${{ !!matrix.expected }}
       run: |

@@ -55,9 +55,7 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
   end
 
   def generate_workflow(entries) do
-    jobs =
-      Enum.map_join(entries, "\n", fn entry -> generate_job(entry) end)
-      |> indent_string(2)
+    jobs = Enum.map_join(entries, &generate_job/1)
 
     """
     # CI output from these examples are available here:
@@ -85,27 +83,65 @@ defmodule Mix.Tasks.E2e.UpdateExamplesWorkflow do
   end
 
   defp generate_job(%Entry{} = entry) do
-    pre_indented_script_lines =
-      entry.script |> String.trim_trailing() |> dedent_string |> indent_string(10)
+    action_ref = "gaggle/elixir_script" <> "@" <> "v0"
 
-    #                                           ↑
-    # No trailing empty lines because we tightly control how script-lines are placed within the template
-    #                                                                                                  ↑↑
-    # In the job template below "script" is indented 8, so the script itself needs 10 indents
+    file_creation_step = generate_file_creation_step(entry.file_content)
+    script_yaml = format_script_yaml(entry.script)
 
     """
-    #{entry.id}:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: gaggle/elixir_script@v0
-          id: script
-          with:
-            script: |
-    #{pre_indented_script_lines}
+      #{entry.id}:
+        runs-on: ubuntu-latest
+        steps:
+    #{file_creation_step}      - uses: #{action_ref}
+            id: script
+            with:
+    #{script_yaml}
 
-        - name: Get result
-          run: echo "\${{steps.script.outputs.result}}"
+          - name: Get result
+            run: echo "\${{steps.script.outputs.result}}"
     """
+  end
+
+  defp generate_file_creation_step(nil), do: ""
+
+  defp generate_file_creation_step(file_content) do
+    file_steps =
+      file_content
+      |> Enum.map_join("\n", fn {path, content} ->
+        dir = Path.dirname(path)
+        trimmed_content = String.trim_trailing(content)
+        indented_content = indent_string(trimmed_content, 14)
+
+        "          mkdir -p #{dir}\n" <>
+          "          cat > #{path} << 'EOFMARKER'\n" <>
+          "#{indented_content}\n" <>
+          "          EOFMARKER"
+      end)
+
+    """
+          - name: Create script files
+            run: |
+    #{file_steps}
+
+    """
+  end
+
+  defp format_script_yaml(script) do
+    trimmed_script = String.trim(script)
+
+    # Check if it's a file path (same logic as ScriptRunner.is_file_path?)
+    is_file_path = String.starts_with?(trimmed_script, ["./", "../", "/"])
+
+    if is_file_path do
+      # File path - use inline format
+      "          script: #{trimmed_script}"
+    else
+      # Inline code - use pipe format with proper indentation
+      indented_script =
+        script |> String.trim_trailing() |> dedent_string |> indent_string(12)
+
+      "          script: |\n#{indented_script}"
+    end
   end
 
   @spec indent_string(String.t(), non_neg_integer()) :: String.t()

@@ -3,7 +3,7 @@ defmodule ElixirScript.E2e.Entry do
   A struct representing the data for an E2E test
   """
 
-  defstruct id: nil, name: nil, script: nil, file: nil, expected: nil
+  defstruct id: nil, name: nil, script: nil, file_content: nil, expected: nil
 end
 
 defmodule ElixirScript.E2e do
@@ -25,18 +25,18 @@ defmodule ElixirScript.E2e do
   defp process_entry(entry) do
     name = Map.fetch!(entry, :name)
     script = Map.get(entry, :script)
-    file = Map.get(entry, :file)
+    file_content = Map.get(entry, :file_content)
     expected = Map.get(entry, :expected)
 
-    if !script && !file do
-      raise(KeyError, "key :script or :file not found in: #{inspect(entry)}")
+    if !script do
+      raise(KeyError, "key :script not found in: #{inspect(entry)}")
     end
 
     %Entry{
       id: slugify(name),
       name: name,
       script: script,
-      file: file,
+      file_content: file_content,
       expected: expected
     }
   end

@@ -33,7 +33,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   io-is-visible-in-logs:
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +44,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   event-context-is-available:
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +56,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   the-entire-context-can-be-inspected:
     runs-on: ubuntu-latest
     steps:
@@ -70,7 +67,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   multiline-scripts-are-possible:
     runs-on: ubuntu-latest
     steps:
@@ -83,7 +79,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   oh-hi-mark-greeter:
     runs-on: ubuntu-latest
     steps:
@@ -98,7 +93,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   can-use-the-github-api-via-tentacat:
     runs-on: ubuntu-latest
     steps:
@@ -111,7 +105,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   can-grab-information-via-the-github-api:
     runs-on: ubuntu-latest
     steps:
@@ -124,7 +117,6 @@ jobs:
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"
-
   can-interact-with-repositories-via-github-api:
     runs-on: ubuntu-latest
     steps:
@@ -134,6 +126,141 @@ jobs:
           script: |
             {204, _, _} = Tentacat.Users.Starring.star(client, "gaggle", "elixir_script")
             :ok
+
+      - name: Get result
+        run: echo "${{steps.script.outputs.result}}"
+  file-scripts-can-define-and-use-modules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create script files
+        run: |
+          mkdir -p ./.github/scripts
+          cat > ./.github/scripts/pr_analyzer.exs << 'EOFMARKER'
+              defmodule PRAnalyzer do
+                def analyze(context) do
+                  %{
+                    event: context.event_name,
+                    workflow: context.workflow,
+                    job: context.job,
+                    ref: context.ref
+                  }
+                end
+
+                def format_message(analysis) do
+                  "PR Analysis: event=#{analysis.event}"
+                end
+              end
+
+              # Use the module to analyze and format
+              analysis = PRAnalyzer.analyze(context)
+              PRAnalyzer.format_message(analysis)
+          EOFMARKER
+
+      - uses: gaggle/elixir_script@v0
+        id: script
+        with:
+          script: ./.github/scripts/pr_analyzer.exs
+
+      - name: Get result
+        run: echo "${{steps.script.outputs.result}}"
+  file-scripts-can-use-relative-require-for-helper-modules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create script files
+        run: |
+          mkdir -p ./scripts
+          cat > ./scripts/helpers.exs << 'EOFMARKER'
+              defmodule Helpers do
+                def format_workflow(_context) do
+                  "Script loaded from: ./scripts/main.exs"
+                end
+              end
+          EOFMARKER
+          mkdir -p ./scripts
+          cat > ./scripts/main.exs << 'EOFMARKER'
+              Code.require_file("helpers.exs", __DIR__)
+              Helpers.format_workflow(context)
+          EOFMARKER
+
+      - uses: gaggle/elixir_script@v0
+        id: script
+        with:
+          script: ./scripts/main.exs
+
+      - name: Get result
+        run: echo "${{steps.script.outputs.result}}"
+  bootstrap-pattern-delegates-to-testable-module:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create script files
+        run: |
+          mkdir -p .
+          cat > main.ex << 'EOFMARKER'
+              defmodule Main do
+                def run(_context) do
+                  "Bootstrap test passed!"
+                end
+              end
+          EOFMARKER
+
+      - uses: gaggle/elixir_script@v0
+        id: script
+        with:
+          script: |
+            # Bootstrap: load and run the main module
+            Code.require_file("main.ex", ".")
+            Main.run(context)
+
+      - name: Get result
+        run: echo "${{steps.script.outputs.result}}"
+  bootstrap-with-complex-module-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create script files
+        run: |
+          mkdir -p lib
+          cat > lib/analyzer.ex << 'EOFMARKER'
+              defmodule Analyzer do
+                def analyze_event(context) do
+                  %{
+                    type: context.event_name,
+                    branch: extract_branch(context.ref)
+                  }
+                end
+
+                defp extract_branch(ref) do
+                  ref |> String.split("/") |> List.last()
+                end
+              end
+          EOFMARKER
+          mkdir -p lib
+          cat > lib/app.ex << 'EOFMARKER'
+              defmodule App do
+                def start(context, _client) do
+                  context
+                  |> Analyzer.analyze_event()
+                  |> Formatter.format_analysis()
+                end
+              end
+          EOFMARKER
+          mkdir -p lib
+          cat > lib/formatter.ex << 'EOFMARKER'
+              defmodule Formatter do
+                def format_analysis(analysis) do
+                  "Event type: #{String.capitalize(analysis.type)}"
+                end
+              end
+          EOFMARKER
+
+      - uses: gaggle/elixir_script@v0
+        id: script
+        with:
+          script: |
+            # Minimal bootstrap that loads and runs the application
+            Code.require_file("lib/analyzer.ex", ".")
+            Code.require_file("lib/formatter.ex", ".")
+            Code.require_file("lib/app.ex", ".")
+            App.start(context, client)
 
       - name: Get result
         run: echo "${{steps.script.outputs.result}}"

@@ -40,7 +40,7 @@ defmodule Mix.Tasks.E2e.SetGithubMatrix do
 
   # Converts an `Entry` struct to a map for JSON encoding.
   defp entry_to_map_for_json(%Entry{} = entry) do
-    Map.take(entry, [:name, :script, :expected])
+    Map.take(entry, [:name, :script, :expected, :file_content])
   end
 
   # Encodes the provided entries into a JSON structure for GitHub Actions matrix.

@@ -66,5 +66,111 @@
       {204, _, _} = Tentacat.Users.Starring.star(client, "gaggle", "elixir_script")
       :ok
     """
+  },
+  %{
+    name: "File scripts can define and use modules",
+    script: "./.github/scripts/pr_analyzer.exs",
+    file_content: %{
+      "./.github/scripts/pr_analyzer.exs" => """
+      defmodule PRAnalyzer do
+        def analyze(context) do
+          %{
+            event: context.event_name,
+            workflow: context.workflow,
+            job: context.job,
+            ref: context.ref
+          }
+        end
+
+        def format_message(analysis) do
+          "PR Analysis: event=\#{analysis.event}"
+        end
+      end
+
+      # Use the module to analyze and format
+      analysis = PRAnalyzer.analyze(context)
+      PRAnalyzer.format_message(analysis)
+      """
+    },
+    expected: "PR Analysis: event=push"
+  },
+  %{
+    name: "File scripts can use relative require for helper modules",
+    script: "./scripts/main.exs",
+    file_content: %{
+      "./scripts/helpers.exs" => """
+      defmodule Helpers do
+        def format_workflow(_context) do
+          "Script loaded from: ./scripts/main.exs"
+        end
+      end
+      """,
+      "./scripts/main.exs" => """
+      Code.require_file("helpers.exs", __DIR__)
+      Helpers.format_workflow(context)
+      """
+    },
+    expected: "Script loaded from: ./scripts/main.exs"
+  },
+  %{
+    name: "Bootstrap pattern delegates to testable module",
+    script: """
+    # Bootstrap: load and run the main module
+    Code.require_file("main.ex", ".")
+    Main.run(context)
+    """,
+    file_content: %{
+      "main.ex" => """
+      defmodule Main do
+        def run(_context) do
+          "Bootstrap test passed!"
+        end
+      end
+      """
+    },
+    expected: "Bootstrap test passed!"
+  },
+  %{
+    name: "Bootstrap with complex module structure",
+    script: """
+    # Minimal bootstrap that loads and runs the application
+    Code.require_file("lib/analyzer.ex", ".")
+    Code.require_file("lib/formatter.ex", ".")
+    Code.require_file("lib/app.ex", ".")
+    App.start(context, client)
+    """,
+    file_content: %{
+      "lib/analyzer.ex" => """
+      defmodule Analyzer do
+        def analyze_event(context) do
+          %{
+            type: context.event_name,
+            branch: extract_branch(context.ref)
+          }
+        end
+
+        defp extract_branch(ref) do
+          ref |> String.split("/") |> List.last()
+        end
+      end
+      """,
+      "lib/formatter.ex" => """
+      defmodule Formatter do
+        def format_analysis(analysis) do
+          "Event type: \#{String.capitalize(analysis.type)}"
+        end
+      end
+      """,
+      "lib/app.ex" => """
+      defmodule App do
+        def start(context, _client) do
+          context
+          |> Analyzer.analyze_event()
+          |> Formatter.format_analysis()
+        end
+      end
+      """
+    },
+    expected: "Event type: Push"
   }
 ]
