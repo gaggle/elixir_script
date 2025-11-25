@@ -13,8 +13,13 @@ defmodule ElixirScript.MixProject do
         plt_add_apps: [:mix],
         plt_core_path: "priv/plts/core.plt",
         plt_local_path: "priv/plts/project.plt"
-      ],
-      preferred_cli_env: ["test.watch": :test]
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: ["test.watch": :test]
     ]
   end
 
@@ -28,13 +33,13 @@ defmodule ElixirScript.MixProject do
   defp deps do
     [
       {:bypass, "~> 2.1", only: :test},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.4"},
-      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.0", only: :test},
+      {:mix_test_watch, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:mox, "~> 1.2", only: :test},
       {:temp, "~> 0.4", only: :test},
-      {:tentacat, "~> 2.0"}
+      {:tentacat, "~> 2.5"}
     ]
   end
 
