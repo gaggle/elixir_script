@@ -13,9 +13,54 @@ show_usage() {
   echo "  major  - Increment major version (X.0.0)"
 }
 
+# Try to fetch tags; if it fails (eg. due to moving tags like v0),
+# print helpful instructions and continue using local tags.
+fetch_tags_or_report() {
+  if git fetch --tags --quiet 2>/dev/null; then
+    return 0
+  fi
+
+  echo "WARNING: git fetch --tags failed. This can happen if moving tags (eg. v0) differ locally."
+
+  # Detect conflicting tags between remote and local
+  declare -A _remote _local
+
+  while read -r sha ref; do
+    tag="${ref#refs/tags/}"
+    [[ -n "$tag" ]] && _remote["$tag"]="$sha"
+  done < <(git ls-remote --tags --refs origin 2>/dev/null || true)
+
+  while read -r sha ref; do
+    tag="${ref#refs/tags/}"
+    [[ -n "$tag" ]] && _local["$tag"]="$sha"
+  done < <(git show-ref --tags 2>/dev/null || true)
+
+  conflicts=()
+  for tag in "${!_remote[@]}"; do
+    if [[ -n "${_local[$tag]:-}" && "${_local[$tag]}" != "${_remote[$tag]}" ]]; then
+      conflicts+=("$tag")
+    fi
+  done
+
+  if [[ ${#conflicts[@]} -gt 0 ]]; then
+    echo "Detected conflicting tags: ${conflicts[*]}"
+    echo "To sync, either run:"
+    echo "  git fetch --tags --force"
+    echo "or update individually, eg:"
+    for t in "${conflicts[@]}"; do
+      echo "  git tag -d $t && git fetch origin tag $t -f"
+    done
+  else
+    echo "No specific conflicting tags detected. You may try: git fetch --tags --force"
+  fi
+
+  # Continue with local tags
+  return 0
+}
+
 get_last_release() {
-  # Get the most recent version tag
-  git tag -l 'v*' --sort=-version:refname | head -1
+  # Get the most recent semver tag (vX.Y.Z), ignore moving tags like v0
+  git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -1
 }
 
 increment_version() {
@@ -50,8 +95,8 @@ if [ -z "$current_version" ] || [ "$current_version" = "null" ]; then
   exit 1
 fi
 
-# Fetch latest tags to ensure we have accurate release history
-git fetch --tags --quiet 2>/dev/null
+# Fetch latest tags to ensure we have accurate release history (with guidance on failure)
+fetch_tags_or_report
 
 # Verify version consistency
 last_release=$(get_last_release)
