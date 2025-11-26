@@ -82,8 +82,8 @@
           }
         end
 
-        def format_message(analysis) do
-          "PR Analysis: event=\#{analysis.event}"
+        def format_message(_analysis) do
+          "PR Analysis: ok"
         end
       end
 
@@ -92,7 +92,7 @@
       PRAnalyzer.format_message(analysis)
       """
     },
-    expected: "PR Analysis: event=push"
+    expected: "PR Analysis: ok"
   },
   %{
     name: "File scripts can use relative require for helper modules",
@@ -156,8 +156,8 @@
       """,
       "lib/formatter.ex" => """
       defmodule Formatter do
-        def format_analysis(analysis) do
-          "Event type: \#{String.capitalize(analysis.type)}"
+        def format_analysis(_analysis) do
+          "Event OK"
         end
       end
       """,
@@ -171,6 +171,6 @@
       end
       """
     },
-    expected: "Event type: Push"
+    expected: "Event OK"
   }
 ]

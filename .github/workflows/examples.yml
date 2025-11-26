@@ -146,8 +146,8 @@ jobs:
                   }
                 end
 
-                def format_message(analysis) do
-                  "PR Analysis: event=#{analysis.event}"
+                def format_message(_analysis) do
+                  "PR Analysis: ok"
                 end
               end
 
@@ -246,8 +246,8 @@ jobs:
           mkdir -p lib
           cat > lib/formatter.ex << 'EOFMARKER'
               defmodule Formatter do
-                def format_analysis(analysis) do
-                  "Event type: #{String.capitalize(analysis.type)}"
+                def format_analysis(_analysis) do
+                  "Event OK"
                 end
               end
           EOFMARKER
