@@ -13,15 +13,15 @@ ENV LANG=en_US.UTF-8 \
 COPY --chmod=755 <<'EOF' /usr/local/bin/pkgx_env
 #!/bin/sh
 set -eu
-PKGX_DEPS=$(pkgx yq eval '.dependencies | to_entries | map("+" + .key + "@" + (.value | sub("^="; ""))) | join(" ")' .pkgx.yaml)
+
+CONFIG_PATH="/usr/local/bin/.pkgx.yaml"
+PKGX_DEPS=$(pkgx yq eval '.dependencies | to_entries | map("+" + .key + "@" + (.value | sub("^="; ""))) | join(" ")' "$CONFIG_PATH")
 exec pkgx $PKGX_DEPS "$@"
 EOF
+COPY .pkgx.yaml /usr/local/bin/
 
 FROM base AS build
 WORKDIR /action/workspace
-
-# System dependencies
-COPY .pkgx.yaml .
 
 # Mix dependencies
 COPY mix.exs mix.lock ./
@@ -35,8 +35,6 @@ RUN pkgx_env mix escript.build
 FROM base AS release
 WORKDIR /usr/local/bin
 
-COPY --from=build /root/.pkgx /root/.pkgx
-COPY --from=build /action/workspace/.pkgx.yaml /usr/local/bin/.pkgx.yaml
 COPY --from=build /action/workspace/elixir_script /usr/local/bin/elixir_script
 
 ENTRYPOINT ["pkgx_env", "/usr/local/bin/elixir_script"]
