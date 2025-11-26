@@ -37,22 +37,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: pkgxdev/dev@fix-erlang
-      - name: Resolve ERL_BASE
-        run: |
-          unset ERL_ROOTDIR
-          ERL_BIN="$(command -v erl)"
-          ERL_BIN_REAL="$(readlink -f "$ERL_BIN")"
-          ERL_DIR="$(dirname "$(dirname "$ERL_BIN_REAL")")"
-          if [ -d "$ERL_DIR/lib/erlang" ]; then
-            ERL_BASE="$ERL_DIR/lib/erlang"
-          else
-            ERL_BASE="$ERL_DIR"
-          fi
-          echo "ERL_BASE=$ERL_BASE" >> "$GITHUB_ENV"
-          echo "ERL_ROOTDIR=$ERL_BASE" >> "$GITHUB_ENV"
-      - run: pkgx +invisible-island.net/ncurses -- mix deps.get
-      - run: pkgx +invisible-island.net/ncurses -- mix deps.compile
-      - run: pkgx +invisible-island.net/ncurses -- mix test
+      - run: mix deps.get
+      - run: mix deps.compile
+      - run: mix test
 
   audit:
     needs: [ version ]
@@ -60,26 +47,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: pkgxdev/dev@fix-erlang
-      - name: Resolve ERL_BASE
-        run: |
-          unset ERL_ROOTDIR
-          ERL_BIN="$(command -v erl)"
-          ERL_BIN_REAL="$(readlink -f "$ERL_BIN")"
-          ERL_DIR="$(dirname "$(dirname "$ERL_BIN_REAL")")"
-          if [ -d "$ERL_DIR/lib/erlang" ]; then
-            ERL_BASE="$ERL_DIR/lib/erlang"
-          else
-            ERL_BASE="$ERL_DIR"
-          fi
-          echo "ERL_BASE=$ERL_BASE" >> "$GITHUB_ENV"
-          echo "ERL_ROOTDIR=$ERL_BASE" >> "$GITHUB_ENV"
-      - run: pkgx +invisible-island.net/ncurses -- mix deps.get
-      - run: pkgx +invisible-island.net/ncurses -- mix deps.compile
+      - run: mix deps.get
+      - run: mix deps.compile
       - uses: ./.github/actions/dialyzer-cache
         with:
           otp-version: ${{ needs.version.outputs.otp-version }}
           elixir-version: ${{ needs.version.outputs.elixir-version }}
-      - run: pkgx +invisible-island.net/ncurses -- bin/audit --skip-check-image
+      - run: bin/audit --skip-check-image
 
   build:
     runs-on: ubuntu-latest
